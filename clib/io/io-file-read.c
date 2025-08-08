@@ -18,6 +18,11 @@ size_t fread(void *ptr, size_t size, size_t nitems, FILE *fh)
         return 0;
     }
 
+    if (IO_AT_EOF(fh))
+    {
+        return 0;
+    }
+
     /* Shortcut reading a single byte if we can */
     if (size == 1 && nitems == 1)
     {
@@ -87,6 +92,10 @@ int fgetc(FILE *fh)
         errno = EPERM;
         return EOF;
     }
+    if (IO_AT_EOF(fh))
+    {
+        return EOF;
+    }
 
     if (fh->_flags & _IO_CHARPUSHED)
     {
@@ -97,6 +106,11 @@ int fgetc(FILE *fh)
     }
 
     c = IO_DISPATCH(fh)->read_byte(fh);
+    if (c == IO_DISPATCH_EOF)
+    {
+        fh->_flags |= _IO_EOF;
+        return 0;
+    }
     if (c < 0)
     {
         errno = -c;
@@ -126,6 +140,7 @@ int ungetc(int c, FILE *fh)
     if (c == EOF)
         return EOF; /* No push if they tried pushing EOF */
     fh->_flags |= _IO_CHARPUSHED;
+    fh->_flags &= ~_IO_EOF; /* Clear the EOF state */
     fh->_shortbuf[0] = c;
     return c;
 }

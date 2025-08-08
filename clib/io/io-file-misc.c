@@ -14,6 +14,9 @@ int feof(FILE *fh)
 
     CHECK_MAGIC(fh, -1);
 
+    if (IO_AT_EOF(fh))
+        return 1;
+
     result = IO_DISPATCH(fh)->check_eof(fh);
     if (result < 0)
     {

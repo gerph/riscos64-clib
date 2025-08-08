@@ -134,6 +134,14 @@ int _kernel_osargs(int op, unsigned handle, int arg);
 int _kernel_osgbpb(int op, unsigned handle, _kernel_osgbpb_block *inout);
 
 /*************************************************** Gerph *********
+ Function:      _kernel_osbget
+ Description:   OS_BGet interface to read a single byte from a file
+ Parameters:    handle = the file handle to read
+ Returns:       byte read, or -1 if nothing read (eg EOF)
+ ******************************************************************/
+int _kernel_osbget(unsigned handle);
+
+/*************************************************** Gerph *********
  Function:      _kernel_osfile
  Description:   Call OS_File for file based operations
  Parameters:    op = the operation reason
