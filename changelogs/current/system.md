@@ -2,7 +2,7 @@
 -
 
 ### Added
--
+- stdlib: `system` can now handle `chain:` type calls (but not `call:` type calls).
 
 ### Changed
 -
