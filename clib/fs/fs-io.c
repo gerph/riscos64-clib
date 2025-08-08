@@ -69,12 +69,9 @@ static int __fs_read_byte(FILE *fh)
 {
     _kernel_oserror *err;
     int c;
-    err = _swix(OS_BGet, _IN(1)|_OUT(0), fh->_fileno, &c);
-    /* FIXME: Doesn't check for EOF */
-    if (err)
-    {
-        return -__fs_converterr(err);
-    }
+    c = _kernel_osbget(fh->_fileno);
+    if (c == -1)
+        return IO_DISPATCH_EOF;
     return c;
 }
 

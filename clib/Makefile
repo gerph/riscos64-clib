@@ -293,7 +293,6 @@ OBJS = 	\
 		kernel/kernel-hostos.o \
 		kernel/kernel-fpavailable.o \
 		kernel/kernel-osbyte.o \
-		kernel/kernel-osrdch.o \
 		kernel/kernel-oswrch.o \
 		kernel/kernel-osgbpb.o \
 		kernel/kernel-osargs.o \
@@ -373,6 +372,7 @@ OBJS = 	\
 		swis-kernel.o \
 		swis-module.o \
 		swis-heap.o \
+		swis-fs.o \
 		swis.o \
 		start.o \
 		start-exit.o \

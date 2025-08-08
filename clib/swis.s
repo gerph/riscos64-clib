@@ -2,6 +2,7 @@
 
 .global __os_writec
 .global __os_readc
+.global _kernel_rdch
 .global __os_word
 .global __os_inkey
 .global __os_write0
@@ -33,6 +34,7 @@
 
 .section .text.os_readc
     FUNC    "__os_readc"
+_kernel_osrdch:
     STP     x29, x30, [sp, #-16]!
     MOV     x29, sp
     MOV     x1, #0

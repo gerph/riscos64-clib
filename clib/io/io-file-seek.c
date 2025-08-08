@@ -34,8 +34,8 @@ int fseek(FILE *fh, long int pos, int whence)
     }
     else
     {
-        /* No error, so unmark as any character pushed back */
-        fh->_flags &= ~ _IO_CHARPUSHED;
+        /* No error, so unmark as any character pushed back and EOF */
+        fh->_flags &= ~ (_IO_CHARPUSHED | _IO_EOF);
     }
     return 0;
 }

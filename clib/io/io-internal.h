@@ -33,6 +33,7 @@ extern FILE *__file_list;
 #define _IO_WRITABLE        (1u<<3)  /* Can be written */
 #define _IO_CONSOLE         (1u<<4)  /* Is a console */
 #define _IO_APPEND          (1u<<5)  /* Is append-only */
+#define _IO_EOF             (1u<<6)  /* At EOF until seek */
 
 #define _IO_MAGIC (0x381F0000u)
 #define _IO_MAGIC_MASK (0xFFFF0000u)
@@ -89,6 +90,8 @@ typedef struct _io_dispatch_s {
     _io_check_eof       check_eof;
 } _io_dispatch_t;
 
+#define IO_DISPATCH_EOF (-256) /* Value returned by _io_read_multiple/line to indicate an EOF condition */
+
 /* _IO_marker is used to give us information about the file - it doesn't have to be here, but it's easy to add */
 struct _IO_marker {
     char filename[PATH_MAX]; /* temporary filename name */
@@ -101,6 +104,8 @@ struct _IO_marker {
 #define IO_IS_CONSOLE(fh)   ((fh)->_flags & _IO_CONSOLE)
 #define IO_IS_KEYBOARD(fh)  (((fh)->_flags & (_IO_CONSOLE | _IO_READABLE)) == (_IO_CONSOLE | _IO_READABLE))
 #define IO_IS_SCREEN(fh)    (((fh)->_flags & (_IO_CONSOLE | _IO_WRITABLE)) == (_IO_CONSOLE | _IO_WRITABLE))
+
+#define IO_AT_EOF(fh)       ((fh)->_flags & _IO_EOF)
 
 /* Get the pointer to the dispatch table for this FILE */
 #define IO_DISPATCH(fh)     ( (_io_dispatch_t *)((fh)->_IO_save_base) )
