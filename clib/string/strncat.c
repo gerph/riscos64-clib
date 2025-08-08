@@ -7,6 +7,7 @@ char *strncat(char *a, const char *b, size_t n)
     /* Find the end of the string */
     while (*a++)
         ;
+    a--;
     while (--n >= 0)
     {
         char c = *b++;
