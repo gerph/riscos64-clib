@@ -185,6 +185,7 @@ __os_changeenvironment_error:
 .section .text.os_file2
     FUNC    "__os_file2"
 __os_file3:
+.type __os_file3, @function
     STP     x29, x30, [sp, #-16]!
     MOV     x29, sp
     MOV     x10, #0x9                   // OS_File
@@ -232,6 +233,7 @@ _kosfile_skip_store:
 .section .text.os_fscontrol2
     FUNC    "__os_fscontrol2"
 __os_fscontrol3:
+.type __os_fscontrol3, @function
     STP     x29, x30, [sp, #-16]!
     MOV     x29, sp
     MOV     x10, #0x29                  // OS_FSControl
@@ -242,7 +244,8 @@ __os_fscontrol3:
 
 // OS_Byte with simple semantics
 // int __os_byte_out1(r0, r1, r2) => r1 value on return
-__os_byte_out1:
+.section .text.os_byte_out1
+    FUNC    "__os_byte_out1"
     STP     x29, x30, [sp, #-16]!
     MOV     x29, sp
     MOV     x10, #0x6                   // OS_Byte

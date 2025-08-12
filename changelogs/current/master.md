@@ -10,6 +10,7 @@
 
 ### Fixed
 - stdio: Fix for fgets failing to include the trailing newline in the read line.
+- kernel: Ensured that the SWIs are correctly flagged as functions in assembler.
 
 ### Removed
 - 
