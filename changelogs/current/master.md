@@ -10,6 +10,7 @@
 
 ### Fixed
 - stdio: Fix for fgets failing to include the trailing newline in the read line.
+- stdio: `printf`/`sprintf`/`fprintf` now does nothing when supplied with `NULL` as the format string (previously crashed).
 - kernel: Ensured that the SWIs are correctly flagged as functions in assembler.
 
 ### Removed
