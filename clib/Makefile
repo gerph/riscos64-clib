@@ -141,6 +141,7 @@ CFLAGS += -O1
 
 # Options for this build
 CFLAGS += -DARCH_HAS_DIVISION
+CFLAGS += -DCONSTRUCTORS
 
 # Assembler flags
 AFLAGS = -march=armv8-a
@@ -301,6 +302,7 @@ OBJS = 	\
 		\
 		atexit.o \
 		clib.o \
+		constructors.o \
 		longjmp.o \
 		env.o \
 		signal.o \

@@ -7,6 +7,7 @@
 #include "heap/init.h"
 #include "swis_os.h"
 #include "env.h"
+#include "constructors.h"
 
 /* Define this to put the arguments on the stack, rather then in the heap */
 #define BUILD_ARGV_ON_STACK
@@ -284,7 +285,7 @@ int __main(const char *cli,
     }
 
     if (in_quotes)
-        __main_fail("Missmatched quotes in command line arguments");
+        __main_fail("Mismatched quotes in command line arguments");
 
     /* We now know how many arguments we have, so we can initialise argv */
 #ifdef BUILD_ARGV_ON_STACK
@@ -365,6 +366,10 @@ int __main(const char *cli,
 
 #ifdef CLI_REDIRECTION
     __cli_redirection(argc, argv);
+#endif
+
+#ifdef CONSTRUCTORS
+    __constructors_init();
 #endif
 
     /*** Call main ***/
