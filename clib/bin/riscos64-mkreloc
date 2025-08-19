@@ -44,12 +44,12 @@ use warnings;
 my $relocfile = undef;
 my $output = undef;
 my $outputtype = 'o';
-
-my $section_symbol = '__DataRelStart';
+my $debug = $ENV{'ROBUILD_MKRELOC_DEBUG'} // 0;
 
 my @source;
 my @tabs = (8, 16, 40);
 my $as = $ENV{'AS'} // 'aarch64-unknown-linux-gnu-as';
+my %symbols;
 
 sub add_output
 {
@@ -126,6 +126,109 @@ sub prepend_output
 }
 
 
+##
+# Extract a value from a relocation in the form <symbol/section>+0x<value>
+#
+# @param    $value = the string to process
+#
+# @return:  ($section_name, $symbol_relative, $value_offset)
+sub extract_value
+{
+    my ($value) = @_;
+    my $valuesym = undef;
+    my $valueoffset = 0;
+    my $section = '';
+
+    if ($value =~ /^(\.?[a-zA-Z_][a-zA-Z_0-9\.]*)$/)
+    {
+        $valuesym = $1;
+    }
+    elsif ($value =~ /^(\.?[a-zA-Z_][a-zA-Z_0-9\.]*)\+0x([A-Fa-f0-9]{16})$/)
+    {
+        $valuesym = $1;
+        $valueoffset = hex($2);
+    }
+    else
+    {
+        print STDERR "Relocation value '$value' not understood in '$_'\n";
+        exit(1);
+    }
+
+    if ($valuesym =~ /^\./)
+    {
+        # It's already a section
+        $section = $valuesym;
+        if ($valuesym =~ /^\.text/)
+        {
+            $valuesym = '__CodeStart';
+        }
+        elsif ($valuesym =~ /^\.rodata/)
+        {
+            $valuesym = '__RODataStart';
+        }
+        elsif ($valuesym =~ /^\.data\.rel\.ro/)
+        {
+            $valuesym = '__RODataRelStart';
+        }
+        elsif ($valuesym =~ /^\.data\.rel/)
+        {
+            $valuesym = '__DataRelStart';
+        }
+        elsif ($valuesym =~ /^\.data/)
+        {
+            $valuesym = '__DataStart';
+        }
+        elsif ($valuesym =~ /^\.bss/)
+        {
+            $valuesym = '__ZIStart';
+        }
+    }
+    else
+    {
+        my $sym = $symbols{$valuesym};
+        if (!defined $sym)
+        {
+            print STDERR "Cannot locate symbol '$sym' in relocation '$_'\n";
+            exit(1);
+        }
+        $section = $sym->{'section'};
+    }
+    return ($section, $valuesym, $valueoffset);
+}
+
+
+##
+# Convert the section name into a relocation type
+#
+# @param    $section = the section we're decoding
+#
+# @return:  1 for code, 2 for read-only data, 3 for read-write data
+sub relocation_type
+{
+    my ($section) = @_;
+
+    my $reloctabletype = undef;
+    if ($section =~ /^\.text/)
+    {
+        $reloctabletype = 1;     # 1 => code area relocation
+    }
+    elsif ($section =~ /^\.rodata|^\.data\.rel\.ro/)
+    {
+        $reloctabletype = 2;     # 2 => RO data area relocation
+    }
+    elsif ($section =~ /^\.data|^\.bss/)
+    {
+        $reloctabletype = 3;     # 3 => RW data area relocation
+    }
+    else
+    {
+        print STDERR "Unsupported relocation type for section '$section' in relocation '$_'\n";
+        exit(1);
+    }
+    return $reloctabletype;
+}
+
+
 while (my $arg = shift)
 {
     if ($arg =~ /^-/)
@@ -170,8 +273,9 @@ if (!defined $relocfile || !defined $output)
 
 my $inreloc_section;
 my $insymbols;
+my $section_symbol;
+my $section_reloctabletype;
 
-my %symbols;
 my $nrelocations = 0;
 
 append_output('.section .riscos.reloc',
@@ -189,6 +293,20 @@ while (<$ifh>)
     if (/^RELOCATION RECORDS FOR \[(.*)\]:/)
     {
         $inreloc_section = $1;
+        $insymbols = undef;
+        if ($inreloc_section =~ /^(\.text|\.rodata|\.data|\.bss)/)
+        {
+            # One of the relocation sections we can handle
+            print "Processing relocations for $inreloc_section\n" if ($debug);
+            ($_, $section_symbol, $_) = extract_value($inreloc_section);
+            $section_reloctabletype = relocation_type($inreloc_section);
+        }
+        else
+        {
+            # We don't handle the relocation records for this section.
+            print "Skipping relocations for $inreloc_section\n" if ($debug);
+            $inreloc_section = undef;
+        }
     }
     elsif ($_ eq '')
     {
@@ -246,9 +364,9 @@ while (<$ifh>)
             exit(1);
         }
     }
-    elsif ($inreloc_section && $inreloc_section eq '.data.rel')
+    elsif ($inreloc_section && $inreloc_section =~ /^\.data.*|\.rodata.*/)
     {
-        # We're in a section we're interested in
+        # We're in a section we're interested in relocating.
         #
         # The type of line we are interested in is:
         #
@@ -258,84 +376,17 @@ while (<$ifh>)
             my $section_offset = hex($1);
             my $reloctype = $2;
             my $value = $3;
-            my $valuesym = undef;
-            my $valueoffset = 0;
-            if ($value =~ /^(\.?[a-zA-Z_][a-zA-Z_0-9]*)$/)
-            {
-                $valuesym = $1;
-            }
-            elsif ($value =~ /^(\.?[a-zA-Z_][a-zA-Z_0-9\.]*)\+0x([A-Fa-f0-9]{16})$/)
-            {
-                $valuesym = $1;
-                $valueoffset = hex($2);
-            }
-            else
-            {
-                print STDERR "Relocation value '$value' not understood in '$_'\n";
-                exit(1);
-            }
+            my ($valuesection, $valuesym, $valueoffset) = extract_value($value);
+
             if ($reloctype ne 'R_AARCH64_ABS64')
             {
                 print STDERR "Relocation type '$reloctype' not understood in '$_'\n";
                 exit(1);
             }
 
-            my $reloctabletype;
-            my $section = '';
-            if ($valuesym =~ /^\./)
-            {
-                # It's already a section
-                $section = $valuesym;
-                if ($valuesym =~ /^\.text/)
-                {
-                    $valuesym = '__CodeStart';
-                }
-                elsif ($valuesym =~ /^\.(rodata|data\.ro)/ )
-                {
-                    $valuesym = '__RODataStart';
-                }
-                elsif ($valuesym =~ /^\.data/)
-                {
-                    $valuesym = '__DataStart';
-                }
-                elsif ($valuesym =~ /^\.bss/)
-                {
-                    $valuesym = '__ZIStart';
-                }
-            }
-            else
-            {
-                my $sym = $symbols{$valuesym};
-                if (!defined $sym)
-                {
-                    print STDERR "Cannot locate symbol '$sym' in relocation '$_'\n";
-                    exit(1);
-                }
-                $reloctabletype = undef;
-                $section = $sym->{'section'};
-            }
-            if ($section =~ /^\.text/)
-            {
-                $reloctabletype = 1;     # 1 => code area relocation
-            }
-            elsif ($section =~ /^\.rodata/)
-            {
-                $reloctabletype = 2;     # 2 => RO data area relocation
-            }
-            elsif ($section =~ /^\.data|^\.bss/)
-            {
-                $reloctabletype = 3;     # 3 => RW data area relocation
-            }
-            else
-            {
-                print STDERR "Unsupported relocation type for section '$section' in relocation '$_'\n";
-                exit(1);
-            }
+            my $value_reloctabletype = relocation_type($valuesection);
 
-            # Replace section relative symbols with defined symbols from the linker file
-            $valuesym = '__DataRelStart' if ($valuesym eq '.data.rel');
-
-            append_output(".word\t$reloctabletype\t// Patch type (for section $section)",
+            append_output(".word\t($section_reloctabletype << 8) | ($value_reloctabletype)\t// Patch type (for section $inreloc_section -> $valuesection)",
                           ".dword\t$section_symbol + $section_offset\t// File offset to patch",
                           ".dword\t$valuesym + $valueoffset\t// File offset to point to");
             $nrelocations++;
@@ -466,7 +517,10 @@ if ($outputtype eq 's')
 # We're outputting the relocation table as an ELF file.
 
 # For diagnostics:
-#print STDERR map { "$_\n" } @source;
+if ($debug)
+{
+    print STDERR map { "$_\n" } @source;
+}
 
 open(my $pipe, "|-", "$as -o $output") || die "Failed to create relocation table object '$output' through GNU assember (cannot find binary?)\n";
 print $pipe map { "$_\n" } @source;

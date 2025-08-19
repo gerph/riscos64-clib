@@ -27,7 +27,6 @@ SECTIONS
         *(.data.ro)
         *(SORT(.rodata.*))
         *(SORT(.data.ro.*))
-        *(.riscos.reloc)
 
         . = ALIGN(8);
         __GOTStart = ABSOLUTE(.);
@@ -35,11 +34,21 @@ SECTIONS
         *(.got.plt)
         __GOTEnd = ABSOLUTE(.);
 
-        . = ALIGN(16);
-        __RODataEnd = ABSOLUTE(.);
+        . = ALIGN(8);
     } > rmf
 
-    __RODataSize = SIZEOF(.rodata);
+    .data.rel.ro . : {
+        __RODataRelStart = ABSOLUTE(.);
+        *(.data.rel.ro)
+        *(SORT(.data.rel.ro.*))
+
+        *(.riscos.reloc)
+        . = ALIGN(16);
+    } > rmf
+    __RODataEnd = ABSOLUTE(.);
+    __RODataRelEnd = ABSOLUTE(.);
+
+    __RODataSize = SIZEOF(.rodata) + SIZEOF(.data.rel.ro);
     __ROSize = __RODataSize + __CodeSize;
 
     .data . : {
@@ -72,18 +81,9 @@ SECTIONS
     __ZIEnd = ABSOLUTE(.);
     __ZISize = SIZEOF(.bss);
 
+
     __RWSize = __DataSize + __ZISize;
 
-    /* Place the eh_frame and others out of the way - we don't use them yet */
-    .eh_frame (NOLOAD) : { *(.eh_frame) }
-    .igot (NOLOAD) : { *(.igot.*) }
-    .iplt (NOLOAD) : { *(.iplt) }
-
-    .interp (NOLOAD) : { *(.interp) }
-    .dynsym (NOLOAD) : { *(.dynsym) }
-    .dynstr (NOLOAD) : { *(.dynstr) }
-    .hash (NOLOAD) : { *(.hash) }
-    .gnu.hash (NOLOAD) : { *(.gnu.hash) }
-
-    __patchable_function_entries : { *(__patchable_function_entries) }
+    /* Discard any sections not named */
+    /DISCARD/ : {*(*)}
 }
