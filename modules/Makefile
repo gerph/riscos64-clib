@@ -15,7 +15,10 @@ TARGET ?= module_init
 CROSS_ROOT = ${shell echo $$CROSS_ROOT}
 
 ALL_TARGETS = module_init \
-              module_c
+              module_c \
+              module_c_reloc_const \
+              module_c_reloc_static \
+              module_c_reloc_static_const \
 
 
 
@@ -110,7 +113,8 @@ RORELOC = ${CLIBDIR}/bin/riscos64-mkreloc
 
 OBJS =	${TARGET}.o
 
-ifeq (${TARGET},module_c)
+ifneq ($(filter module_c%,${TARGET}),)
+	# Any C modules use the modhead file
 	OBJS += modhead.o
 endif
 
@@ -132,11 +136,11 @@ ${TARGET}.syms: ${TARGET}.bin
 
 ifeq (${USE_FUNC_SIGNATURE},1)
 ${TARGET},ffa: ${TARGET}.bin ${TARGET}.syms
-	${OBJCOPY} -O binary -j .text -j .rodata -j .data -j .data.rel -j .data.rel ${TARGET}.bin $@
+	${OBJCOPY} -O binary -j .text -j .rodata -j .data.rel.ro -j .data -j .data.rel ${TARGET}.bin $@
 	python ${ROSYMBOLS} ${TARGET}.syms $@
 else
 ${TARGET},ffa: ${TARGET}.bin
-	${OBJCOPY} -O binary -j .text -j .rodata -j .data -j .data.rel -j .data.rel ${TARGET}.bin $@
+	${OBJCOPY} -O binary -j .text -j .rodata -j .data.rel.ro -j .data -j .data.rel ${TARGET}.bin $@
 endif
 
 
