@@ -130,11 +130,11 @@ ${TARGET}.syms: ${TARGET}.bin
 
 ifeq (${USE_FUNC_SIGNATURE},1)
 ${TARGET},ffc: ${TARGET}.bin ${TARGET}.syms
-	${OBJCOPY} -O binary -j .text -j .rodata -j .data -j .data.rel -j .bss ${TARGET}.bin $@
+	${OBJCOPY} -O binary -j .text -j .rodata -j .data.rel.ro -j .data -j .data.rel -j .bss ${TARGET}.bin $@
 	python ${ROSYMBOLS} ${TARGET}.syms $@
 else
 ${TARGET},ffc: ${TARGET}.bin
-	${OBJCOPY} -O binary -j .text -j .rodata -j .data -j .data.rel -j .bss ${TARGET}.bin $@
+	${OBJCOPY} -O binary -j .text -j .rodata -j .data.rel.ro -j .data -j .data.rel -j .bss ${TARGET}.bin $@
 endif
 
 endif

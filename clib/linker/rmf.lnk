@@ -43,7 +43,9 @@ SECTIONS
         *(SORT(.data.rel.ro.*))
 
         *(.riscos.reloc)
-        . = ALIGN(16);
+
+        /* Align the following .data region (R/W) at a page boundary */
+        . = ALIGN(4096);
     } > rmf
     __RODataEnd = ABSOLUTE(.);
     __RODataRelEnd = ABSOLUTE(.);
