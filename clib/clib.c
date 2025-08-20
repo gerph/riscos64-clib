@@ -13,6 +13,7 @@
 #include "heap/init.h"
 #include "io/io-init.h"
 #include "sysvars/sysvars-init.h"
+#include "constructors.h"
 //#include "swis_os.h"
 #include "clib.h"
 
@@ -48,6 +49,9 @@ void _clib_internalinit(void)
  ******************************************************************/
 void _clib_finalise(void)
 {
+#ifdef CONSTRUCTORS
+    __constructors_final();
+#endif
     __atexit_trigger();
 
     /* Shut down our modules */

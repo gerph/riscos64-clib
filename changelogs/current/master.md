@@ -14,6 +14,7 @@
 
 ### Fixed
 - stdio: Fix for fgets failing to include the trailing newline in the read line.
+- stdio: `printf`/`sprintf`/`fprintf` now does nothing when supplied with `NULL` as the format string (previously crashed).
 - kernel: Ensured that the SWIs are correctly flagged as functions in assembler.
 - linking: More fixes for the relocation table, now allowing the relocation of symbols referencing the .rodata section, and references from the .data.rel.ro section.
 

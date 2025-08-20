@@ -95,6 +95,11 @@ static int write_with_newlines(outputter_t *out, const char *s, int size)
 int _vprintf(outputter_t *out, const char *format, va_list args)
 {
     int n = 0;
+    if (format == NULL)
+    {
+        /* IF you give a NULL format string, you get back no characters */
+        return 0;
+    }
 
     while (*format)
     {
