@@ -309,6 +309,7 @@ OBJS = 	\
 		main.o \
 		module.o \
 		malloc.o \
+		system.o \
 		\
 		qsort.o \
 		bsearch.o \
