@@ -23,6 +23,11 @@ int feof(FILE *fh)
         errno = -result; /* FIXME: Apparently these functions should not fail or set errno? */
         return 1;
     }
+    if (result)
+    {
+        /* We are at EOF, so we flag this - which will return more quickly on other calls */
+        fh->_flags |= _IO_EOF;
+    }
     return result;
 }
 
@@ -62,6 +67,10 @@ int setvbuf(FILE *fh, char *buf, int type, size_t size)
 void clearerr(FILE *fh)
 {
     /* FIXME: We don't support error flagging at the moment */
+
+    /* We do support EOF flagging, so we can clear the error state */
+    fh->_flags &= ~_IO_EOF;
+
     return;
 }
 
