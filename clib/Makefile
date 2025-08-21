@@ -2,13 +2,14 @@
 #
 # Code compiles with:
 #
-#	__riscos
-#	__riscos64
+#   __riscos
+#   __riscos64
 #   __aarch64__
 #
 # Norcroft defines not set:
-#	__acorn
-#	__arm
+#   __acorn
+#   __arm
+#
 
 CROSS_ROOT = ${shell echo $$CROSS_ROOT}
 
