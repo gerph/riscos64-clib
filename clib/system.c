@@ -84,8 +84,8 @@ int system(const char *string)
         _Exit(1);
     }
 
-    /* Chain'd calls */
-    printf("System calls not currently supported\n");
+    /* Call'd system commands (ie the ones that are expected to be subprocesses) */
+    printf("System commands not currently supported\n");
     abort();
 #endif
 }
