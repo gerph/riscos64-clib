@@ -100,11 +100,11 @@ ifneq ($(filter-out all shell dockcross-linux-arm64 clean export,${MAKECMDGOALS}
 # The command wasn't one of our invocation commands above
 .PHONY: ${MAKECMDGOALS}
 ${MAKECMDGOALS}: dockcross-linux-arm64 VersionNum
-	./dockcross-linux-arm64 make ${MAKECMDGOALS}
+	./dockcross-linux-arm64 make -j4 ${MAKECMDGOALS}
 else
 .PHONY: ${DEFAULT_GOAL}
 ${DEFAULT_GOAL}: dockcross-linux-arm64 VersionNum
-	./dockcross-linux-arm64 make ${DEFAULT_GOAL}
+	./dockcross-linux-arm64 make -j4 ${DEFAULT_GOAL}
 
 VersionNum: ../VersionNum
 	cp $? $@
