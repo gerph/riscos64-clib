@@ -384,7 +384,7 @@ while (<$ifh>)
         #                  |     | section
         #                  |     type (F/O/f)
         #                  scope (l/g)
-        if (/^([A-Fa-f0-9]{16})\s+(.*?)\s([_.][a-zA-Z_0-9._-]+|\*ABS\*|\*UND\*)\s+([A-Fa-f0-9]{16})\s+([a-zA-Z_.][^\s]*)$/)
+        if (/^([A-Fa-f0-9]{16})\s+(.*?)\s([_.][a-zA-Z_0-9._-]+|\*ABS\*|\*UND\*)\s+([A-Fa-f0-9]{16})\s+([a-zA-Z_.][^\s]*)?$/)
         {
             my $address = hex($1);
             my $flags = $2;
