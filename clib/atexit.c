@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
@@ -6,8 +7,7 @@
 //#define ATEXIT_HANDLERS_ON_HEAP
 
 /* How many atexit() handlers we support */
-//#define ATEXIT_MAX (32) /* Standard defined value */
-#define ATEXIT_MAX (8)
+#define ATEXIT_MAX (32) /* Standard defined value */
 
 
 typedef void (*atexit_func_t)(void);
@@ -18,6 +18,7 @@ static atexit_func_t *atexit_funcs;
 #else
 static atexit_func_t atexit_funcs[ATEXIT_MAX];
 #endif
+static int32_t atexit_count = 0;
 
 int atexit(atexit_func_t func)
 {
@@ -31,16 +32,18 @@ int atexit(atexit_func_t func)
     }
 #endif
 
-    for (i=0; i<ATEXIT_MAX; i++)
+    for (i=atexit_count; i<ATEXIT_MAX; i++)
     {
         if (atexit_funcs[i] == NULL)
         {
             atexit_funcs[i] = func;
+            atexit_count = i;
             return 0;
         }
     }
 
     /* All slots filled */
+    errno = ENOMEM;
     return -1;
 }
 
@@ -54,12 +57,13 @@ void __atexit_trigger(void)
 #endif
     {
         /* Call the registered functions in reverse order */
-        for (i=ATEXIT_MAX - 1; i>=0; i--)
+        for (i=atexit_count; i>=0; i--)
         {
             if (atexit_funcs[i] != NULL)
             {
                 atexit_func_t func = atexit_funcs[i];
                 atexit_funcs[i] = NULL;
+                atexit_count--;
                 func();
             }
         }
