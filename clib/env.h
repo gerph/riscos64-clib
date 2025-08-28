@@ -8,6 +8,12 @@
 #ifndef ENV_H
 #define ENV_H
 
+typedef struct riscos_error_buffer_s {
+    uint32_t        pc; /* FIXME: This is only 32bit at the moment */
+    _kernel_oserror err;
+} riscos_error_buffer_t;
+extern riscos_error_buffer_t _kernel_error_buffer;
+
 /*************************************************** Gerph *********
  Function:      _env_init
  Description:   Initialise our program environment handlers

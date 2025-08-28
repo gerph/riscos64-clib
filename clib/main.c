@@ -28,9 +28,10 @@
 
 extern int main(int argc, const char *argv[]);
 
-void *__aif_base;
-void *__aif_end;
-void *__memory_end;
+const void *__aif_base;
+const void *__aif_end;
+const void *__memory_end;
+const void *__root_stack;
 uint32_t __attribute__((weak)) __aif_stacksize;
 uint32_t __attribute__((weak)) __heap_min;
 
@@ -187,6 +188,14 @@ int __main(const char *cli,
            void *memend)
 {
     int rc;
+
+    __aif_base = appspace;
+    __aif_end = append;
+    /* Note: For now these are the same, but might
+     *       change when we introduce signal stack.
+     */
+    __memory_end = memend;
+    __root_stack = memend;
 
     /* We want to initialise the environment so that we exit cleanly */
     _env_init();

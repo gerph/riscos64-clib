@@ -285,6 +285,8 @@ OBJS = 	\
 		kernel/kernel-backtrace.o \
 		kernel/kernel-escape.o \
 		kernel/kernel-state.o \
+		kernel/kernel-raiseerror-entry.o \
+		kernel/kernel-raiseerror.o \
 		kernel/kernel-cli.o \
 		kernel/kernel-system.o \
 		kernel/kernel-unwind-current.o \

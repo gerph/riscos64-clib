@@ -77,11 +77,7 @@ typedef struct handlers_s {
 
 static handlers_t oldhandlers;
 
-typedef struct riscos_error_buffer_s {
-    uint32_t        pc; /* FIXME: This is only 32bit at the moment */
-    _kernel_oserror err;
-} riscos_error_buffer_t;
-static riscos_error_buffer_t error_buffer;
+riscos_error_buffer_t _kernel_error_buffer;
 
 #define ENV_READ ((intptr_t)0)
 
@@ -187,7 +183,7 @@ void _env_init(void)
                          &oldhandlers.abort_exception_handler);
 
     os_changeenvironment(ErrorHandler,
-                         &_env_error, &error_buffer.err, &error_buffer,
+                         &_env_error, &_kernel_error_buffer.err, &_kernel_error_buffer,
                          &oldhandlers.error_handler);
 
     os_changeenvironment(CallBackHandler,

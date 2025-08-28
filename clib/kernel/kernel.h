@@ -64,6 +64,14 @@ int _kernel_fpavailable(void);
  ******************************************************************/
 _kernel_oserror *_kernel_last_oserror(void);
 
+/*************************************************** Gerph *********
+ Function:      _kernel_raise_error
+ Description:   Shut down the application and exit with an error
+ Parameters:    err-> the error (in our buffer)
+ Returns:       never
+ ******************************************************************/
+void __attribute__((noreturn)) _kernel_raise_error(_kernel_oserror *err);
+
 
 /* Host values (as returned by OS_Byte 0, 1) */
 #define _kernel_HOST_UNDEFINED    -1
