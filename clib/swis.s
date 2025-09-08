@@ -227,7 +227,7 @@ _kosfile_skip_load:
 
 _kosfile_skip_store:
     MOV     x6, #-2
-    CSEL    x0, x0, x6, VS              // return -2 if error, or x0 if not
+    CSEL    x0, x0, x6, VC              // return -2 if error, or x0 if not
 
     LDP     x29, x30, [sp], #16
     RET
