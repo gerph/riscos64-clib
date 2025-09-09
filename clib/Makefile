@@ -73,6 +73,10 @@ endif
 shell: dockcross-linux-arm64
 	./dockcross-linux-arm64 bash
 
+change:
+	cd .. ; make change
+
+
 dockcross-linux-arm64:
 	docker run --rm dockcross/linux-arm64:latest > dockcross-linux-arm64
 	chmod +x dockcross-linux-arm64
@@ -96,7 +100,7 @@ clean:
 
 ifeq (${CROSS_ROOT},)
 # If we're outside the docker container, re-run ourselves inside the container
-ifneq ($(filter-out all shell dockcross-linux-arm64 clean export,${MAKECMDGOALS}),)
+ifneq ($(filter-out all shell dockcross-linux-arm64 clean change export,${MAKECMDGOALS}),)
 # The command wasn't one of our invocation commands above
 .PHONY: ${MAKECMDGOALS}
 ${MAKECMDGOALS}: dockcross-linux-arm64 VersionNum

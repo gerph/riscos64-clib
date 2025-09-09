@@ -190,7 +190,7 @@ __os_file3:
 .type __os_file3, @function
     STP     x29, x30, [sp, #-16]!
     MOV     x29, sp
-    MOV     x10, #0x9                   // OS_File
+    MOV     x10, #0x8                   // OS_File
     ORR     x10, x10, #0x20000
     SVC     #0
     LDP     x29, x30, [sp], #16
@@ -215,7 +215,7 @@ __os_file3:
     LDP     w4, w5, [x6, #8]
 
 _kosfile_skip_load:
-    MOV     x10, #0x9                   // OS_File
+    MOV     x10, #0x8                   // OS_File
     ORR     x10, x10, #0x20000
     SVC     #0
 
