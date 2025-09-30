@@ -3,6 +3,7 @@
 
 ### Added
 - kernel: `_kernel_raise_error` is now implemented.
+- math: New functions: `log10`, `log2`, `cbrt`, `cbrtf`, `cbrtl`, `fmax`, `fmaxf`, `fmaxl`, `fmin`, `fminf`, `fminl`, `scalbnf`.
 
 ### Changed
 - stdlib: `atexit` now handles 32 registered functions (previously only handled 8).

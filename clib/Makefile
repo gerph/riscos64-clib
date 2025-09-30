@@ -183,12 +183,15 @@ MATHS_OBJS = \
 		maths/e_expf.o \
 		maths/e_log.o \
 		maths/e_logf.o \
+		maths/e_log2.o \
+		maths/e_log10.o \
 		maths/e_fmod.o \
 		maths/e_fmodf.o \
 		maths/e_fmodl.o \
 		maths/e_pow.o \
 		maths/e_powf.o \
 		maths/e_rem_pio2.o \
+		maths/e_rem_pio2f.o \
 		maths/e_sqrt.o \
 		maths/e_sqrtf.o \
 		\
@@ -202,6 +205,9 @@ MATHS_OBJS = \
 		\
 		maths/s_atan.o \
 		maths/s_atanf.o \
+		maths/s_cbrt.o \
+		maths/s_cbrtf.o \
+		maths/s_cbrtl.o \
 		maths/s_ceil.o \
 		maths/s_ceill.o \
 		maths/s_ceilf.o \
@@ -212,6 +218,12 @@ MATHS_OBJS = \
 		maths/s_cosf.o \
 		maths/s_fabs.o \
 		maths/s_fabsf.o \
+		maths/s_fmax.o \
+		maths/s_fmaxf.o \
+		maths/s_fmaxl.o \
+		maths/s_fmin.o \
+		maths/s_fminf.o \
+		maths/s_fminl.o \
 		maths/s_floor.o \
 		maths/s_floorf.o \
 		maths/s_floorl.o \
@@ -230,6 +242,7 @@ MATHS_OBJS = \
 		maths/s_truncl.o \
 		maths/s_scalbn.o \
 		maths/s_scalbnl.o \
+		maths/s_scalbnf.o \
 
 CFLAGS += -Imaths/include/
 
