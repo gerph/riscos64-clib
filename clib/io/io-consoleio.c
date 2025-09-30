@@ -108,6 +108,31 @@ static int __con_read_byte(FILE *fh)
     /* FIXME: Should return failure if we had EOF? */
     __clock_freeze(true);
     int b = os_readc();
+    if (! (fh->_flags & _IO_BINARY))
+    {
+        /* Non-binary input read */
+        if (b == '\r')
+            b = '\n';
+        if (b == '\r')
+            b = '\n';
+        if (b == '\n')
+        {
+            os_newline();
+        }
+        else if (b == '\b' || b == '\x7f')
+        {
+            os_writec(0x7f); /* Delete character */
+        }
+        else if (b < ' ' && b != '\a') /* escapes for anything but BEL */
+        {
+            os_writec('|');
+            os_writec(b + '@');
+        }
+        else
+        {
+            os_writec(b);
+        }
+    }
     __clock_freeze(false);
     return b;
 }

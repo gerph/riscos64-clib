@@ -34,6 +34,7 @@ extern FILE *__file_list;
 #define _IO_CONSOLE         (1u<<4)  /* Is a console */
 #define _IO_APPEND          (1u<<5)  /* Is append-only */
 #define _IO_EOF             (1u<<6)  /* At EOF until seek */
+#define _IO_BINARY          (1u<<7)  /* Opened as binary */
 
 #define _IO_MAGIC (0x381F0000u)
 #define _IO_MAGIC_MASK (0xFFFF0000u)

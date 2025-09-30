@@ -25,6 +25,7 @@
 bool _fopen(const char *filename, const char *mode, FILE *fh)
 {
     bool append = false;
+    bool binary = false;
     int reason = 0x00;
     for (char c = *mode++; c; c = *mode++)
     {
@@ -43,6 +44,9 @@ bool _fopen(const char *filename, const char *mode, FILE *fh)
         }
         else if (c == '+')
             reason |= 0xC0;
+
+        else if (c == 'b')
+            binary = true;
     }
 
 #ifdef USE_MAGIC_CON_FILENAME
@@ -104,6 +108,8 @@ set_flags:
         fh->_flags |= _IO_READABLE;
     if (append)
         fh->_flags |= _IO_APPEND;
+    if (binary)
+        fh->_flags |= _IO_BINARY;
 
     return true;
 }
