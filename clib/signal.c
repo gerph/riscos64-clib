@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <string.h>
 #include "kernel.h"
+#include "kernel/kernel-errors.h"
 #include "swis.h"
 #include "swis_os.h"
 #include "conversion/cvt.h"
@@ -21,6 +22,10 @@ static uint64_t signals_blocked; /* WARNING: Assumes < 64 signals */
 
 #define signal_ignore (NULL)
 
+static const struct {
+    int32_t errnum;
+    char errmess[8];
+} err_Escape = { ErrorNumber_Escape, "Escape" };
 
 /*************************************************** Gerph *********
  Function:      signal_escape
@@ -31,8 +36,7 @@ static uint64_t signals_blocked; /* WARNING: Assumes < 64 signals */
 static void signal_escape(int sig)
 {
     /* For simplicity, just raise the escape error */
-    static _kernel_oserror err_escape = {17, "Escape"};
-    os_generateerror(&err_escape);
+    os_generateerror(&err_Escape);
 }
 
 
