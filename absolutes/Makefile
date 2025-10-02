@@ -124,6 +124,8 @@ RORELOC = ${CLIBDIR}/bin/riscos64-mkreloc
 
 OBJS =	${TARGET}.o
 
+corrupt_stack.o: CFLAGS += -fstack-protector-all
+
 %.o: %.c
 	${CC} ${CFLAGS} -c -o $@ $?
 
