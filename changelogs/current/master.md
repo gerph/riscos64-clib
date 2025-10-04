@@ -4,6 +4,9 @@
 ### Added
 - kernel: `_kernel_raise_error` is now implemented.
 - math: New functions: `log10`, `log2`, `cbrt`, `cbrtf`, `cbrtl`, `fmax`, `fmaxf`, `fmaxl`, `fmin`, `fminf`, `fminl`, `scalbnf`.
+- math: New functions: `cosh`, `coshf`, `sinh`, `sinhf`, `tanh`, `tanhf`.
+- math: New functions: `roundl`, `round` `roundf`, `exp`, `expf`, `expm1`, `expm1f`.
+- math: New functions: `cimag`, `cimagf`, `cimagl`, `creal`, `crealf`, `creall`.
 
 ### Changed
 - environment: Zero-init code for absolutes now checks whether there is enough memory before starting.

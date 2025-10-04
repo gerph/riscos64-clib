@@ -192,10 +192,16 @@ MATHS_OBJS = \
 		maths/e_powf.o \
 		maths/e_rem_pio2.o \
 		maths/e_rem_pio2f.o \
+		maths/e_cosh.o \
+		maths/e_coshf.o \
+		maths/e_sinh.o \
+		maths/e_sinhf.o \
 		maths/e_sqrt.o \
 		maths/e_sqrtf.o \
 		\
 		maths/k_rem_pio2.o \
+		maths/k_exp.o \
+		maths/k_expf.o \
 		maths/k_cos.o \
 		maths/k_cosf.o \
 		maths/k_sin.o \
@@ -216,6 +222,14 @@ MATHS_OBJS = \
 		maths/s_copysignf.o \
 		maths/s_cos.o \
 		maths/s_cosf.o \
+		maths/s_cimag.o \
+		maths/s_cimagf.o \
+		maths/s_cimagl.o \
+		maths/s_creal.o \
+		maths/s_crealf.o \
+		maths/s_creall.o \
+		maths/s_expm1.o \
+		maths/s_expm1f.o \
 		maths/s_fabs.o \
 		maths/s_fabsf.o \
 		maths/s_fmax.o \
@@ -233,10 +247,15 @@ MATHS_OBJS = \
 		maths/s_nextafter.o \
 		maths/s_nextafterl.o \
 		maths/s_nextafterf.o \
+		maths/s_round.o \
+		maths/s_roundl.o \
+		maths/s_roundf.o \
 		maths/s_sin.o \
 		maths/s_sinf.o \
 		maths/s_tan.o \
 		maths/s_tanf.o \
+		maths/s_tanh.o \
+		maths/s_tanhf.o \
 		maths/s_trunc.o \
 		maths/s_truncf.o \
 		maths/s_truncl.o \
