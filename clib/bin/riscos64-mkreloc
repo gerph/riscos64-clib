@@ -31,6 +31,7 @@
 # 0000000000000001 l       *ABS*  0000000000000000 __riscos
 # 0000000000000004 l       .text  0000000000000000 _CMUNGE_origin
 # 00000000000000ec l       .text  0000000000000000 _CMUNGE_init
+# 0000000000046be0 g     O .data.rel.ro   0000000000000018 .hidden be_const_str_range
 # ----
 #
 # We create a GNU assembler file, and then we assemble to make an ELF file
@@ -380,17 +381,18 @@ while (<$ifh>)
         #
         # 00000000000021b0 l     F .text  000000000000002c stdout_writen
         # ^                ^     ^ ^      ^                ^
-        # value/offset     |     | |      size             name
+        # value/offset     |     | |      size             name (may be prefixed by '.hidden ')
         #                  |     | section
         #                  |     type (F/O/f)
         #                  scope (l/g)
-        if (/^([A-Fa-f0-9]{16})\s+(.*?)\s([_.][a-zA-Z_0-9._-]+|\*ABS\*|\*UND\*)\s+([A-Fa-f0-9]{16})\s+([a-zA-Z_.][^\s]*)?$/)
+        if (/^([A-Fa-f0-9]{16})\s+(.*?)\s([_.][a-zA-Z_0-9._-]+|\*ABS\*|\*UND\*)\s+([A-Fa-f0-9]{16})\s+(\.hidden )?([a-zA-Z_.][^\s]*)?$/)
         {
             my $address = hex($1);
             my $flags = $2;
             my $section = $3;
             my $size = hex($4);
-            my $name = $5;
+            my $hidden = $5;
+            my $name = $6;
 
             if ($flags =~ /l/)
             {

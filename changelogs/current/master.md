@@ -16,6 +16,7 @@
 
 ### Fixed
 - kernel: `_kernel_osfile` and `__osfile2`/`__osfile3` now call the correct SWI (previously called `OS_Args`).
+- linking: Hidden symbols are now recognised and not faulted.
 
 ### Removed
 - 
