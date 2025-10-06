@@ -63,6 +63,35 @@ Individual files can be built with:
 The binaries will be produced as `,ffc` suffixed files. Again a `.map` file is
 present.
 
+### Exported libraries
+
+The exported libraries and tools are built automatically by the GitHub build system.
+The exported directory can be downloaded from the [Releases](https://github.com/gerph/riscos64-clib/releases)
+and used on POSIX systems (Linux, macOS, WSL2). To install the tooling, use:
+
+    bin/robuild64 <target-dir>
+
+This will install the tools:
+
+* `riscos64-cc` - compiler
+* `riscos64-link` - linker
+* `riscos64-libfile` - library tool
+* `riscos64-as` - assembler
+
+all of which will work with RISC OS 64-bit binaries.
+
+For example:
+
+To build a single source into an executable, you might use:
+
+    riscos64-cc main.c
+
+Which would build 64-bit executable called `main,ff8`.
+
+Alternatively, the compile and link process can be done separately, for example:
+
+    riscos64-cc -c main.c -o main.o
+    riscos64-link -aif main.o -o main,ff8
 
 
 ## AIF Format
