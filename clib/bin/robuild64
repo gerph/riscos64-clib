@@ -2,9 +2,30 @@
 ##
 # Invoke the toolchain for RISC OS 64 tools.
 #
+# This is a very cut down version of the tooling for the RISC OS Build environment.
+#
 
 # Errors are fatal
 set -e
+
+if [[ "$RO64DEBUG" == '1' ]] ; then
+    DEBUG=true
+else
+    DEBUG=false
+fi
+
+function canonicalise() {
+    local f=$1
+    local dir
+    dir="$(cd "$(dirname "$f")" > /dev/null && pwd -P)"
+    if [[ "$dir" == '/' ]] ; then
+        echo "/$(basename "$f")"
+    else
+        echo "$dir/$(basename "$f")"
+    fi
+}
+
+SCRIPTDIR="$(canonicalise "$(dirname "$0")")"
 
 # Where we'll store things that we generate
 cache=${XDG_CACHE_HOME:-$HOME/.cache}/riscos-build64
@@ -22,7 +43,7 @@ RORELOC=/ro64/clib/bin/riscos64-mkreloc
 RO64EXPORT=${RO64EXPORT:-/ro64/clib}
 
 # Location of the C library
-CLIB64=${CLIB64:-$(dirname $0)/..}
+CLIB64=${CLIB64:-${SCRIPTDIR}/..}
 
 # How many parent directories we should use in our mounted directory
 RISCOS64_RELDIRS=${RISCOS64_RELDIRS:-0}
@@ -30,36 +51,64 @@ RISCOS64_RELDIRS=${RISCOS64_RELDIRS:-0}
 # Whether we're using the 'ld -Map' or 'objdump' symbols method.
 use_ldmap=false
 
-tmp_reloc=${TMPDIR:-/tmp}/ro64reloc.$$
+tmp_reloc=/tmp/ro64reloc.$$
 function cleanup() {
     local rc=$?
     rm -f "$tmp_reloc"
     return $?
 }
 
-function canonicalise() {
-    local f=$1
-    local dir
-    dir="$(cd "$(dirname "$f")" > /dev/null && pwd -P)"
-    if [[ "$dir" == '/' ]] ; then
-        echo "/$(basename "$f")"
-    else
-        echo "$dir/$(basename "$f")"
-    fi
-}
+if $DEBUG ; then
+    function debug() {
+        echo "DEBUG: $*" >&2
+    }
+else
+    function debug() {
+        :
+    }
+fi
 
 CLIB64=$(canonicalise "$CLIB64")
 
 libcrt="${RO64EXPORT}/libcrt.a"
 
 
-function riscos_cc() {
+function riscos64_cc_help() {
+    cat <<EOM
+RISC OS 64 bit wrapper for GCC.
+Syntax: $tool [<options>] <sourcefile> <objectfile>
+        $tool [<options>] -o <objectfile> <sourcefile>
+
+-l<lib>         Add library to the linked object
+-c              Just compile (no linking)
+-o <file>       Output file; for linking suffix with ',ff8'
+-E              Apply preprocessor
+
+--help          Print this information
+--help-gcc      Print help for GCC arguments
+
+Implicit defines:
+    __riscos
+    __riscos64
+
+Implicit includes:
+    .
+    ${RO64EXPORT}/C
+    ${RO64EXPORT}/Lib/
+    ${RO64EXPORT}/
+EOM
+}
+
+
+
+function riscos64_cc() {
     local inargs=("$@")
     local args=()
     local arg
     local output
     local nextarg
-    local lib
+    local libs=()
+    local libargs=()
     local type=ff8
     local name
     local one_file
@@ -89,9 +138,10 @@ function riscos_cc() {
     extra_flags+=(-nostdlib -ffreestanding -march=armv8-a)
 
     # Add the exports directory to those things we'll build with
-    extra_flags+=(-I/ro64/clib/C \
-                  -I/ro64/clib/Lib/ \
-                  -I/ro64/clib/)
+    extra_flags+=(-I. \
+                  -I${RO64EXPORT}/C \
+                  -I${RO64EXPORT}/Lib/ \
+                  -I${RO64EXPORT}/)
 
     # Options to allow function signatures to appear RISC OS-like
     if [[ "$function_entry_patchable" != '' ]] ; then
@@ -100,43 +150,103 @@ function riscos_cc() {
 
     # Accumulate some args
     compile_only=false
+    preprocess=false
     output=
     one_file=
+    objs=()
     many_files=()
     args=()
+    # We default to position independant code - though the user can turn that off
+    pic=-fPIC
     for arg in "${inargs[@]}" ; do
         if [[ "$nextarg" != '' ]] ; then
             if [[ "$nextarg" = 'output' ]] ; then
+                nextarg=''
                 output=$arg
+                continue
             fi
             nextarg=''
+
+        elif [[ "$arg" == '-help' || "$arg" == '--help' ]] ; then
+            riscos64_cc_help
+            exit 0
+
+        elif [[ "$arg" == '-help-gcc' || "$arg" == '--help-gcc' ]] ; then
+            "$CC" --help
+            exit 0
 
         elif [[ "$arg" == '-c' ]] ; then
             compile_only=true
 
+        elif [[ "$arg" == '-fpic' || "$arg" == '-fPIC' || "$arg" == '-fno-pic' ]] ; then
+            pic="$arg"
+
+        elif [[ "$arg" == '-E' ]] ; then
+            preprocess=true
+
         elif [[ "$arg" == '-o' ]] ; then
             nextarg=output
+            continue
+
+        elif [[ "$arg" =~ ^-l(.*)$ ]] ; then
+            libargs+=("$arg")
+            libs+=("${BASH_REMATCH[1]}")
+            continue
+
+        elif [[ "$arg" =~ /?([^/]*)\.[o]$ ]] ; then
+            objs+=("$arg")
 
         elif [[ "$arg" =~ /?([^/]*)\.[cs]$ ]] ; then
             if [[ "$one_file" == '' ]] ; then
                 one_file="${BASH_REMATCH[1]}"
             else
                 one_file='*'
+                debug "There are many files to build from"
             fi
             many_files+=("$arg")
+            debug "Will build from: '$arg'"
         fi
         args+=("$arg")
     done
 
-    if ! $compile_only ; then
+    args+=("$pic")
+
+    if [[ "${#objs}" != 0 && "${#many_files}" = 0 ]] ; then
+        # They just wanted to use us as a linker.
+        # Go straight to the link stage, BUT we may need to tweak the
+        # target binary name.
+        debug "Used as a linker"
+
+        if [[ "$output" =~ /?([^/]*),[0-9a-f][0-9a-f][0-9a-f]$ ]] ; then
+            :
+        else
+            # Default to making an executable
+            output="$output,ff8"
+        fi
+
+        cmds=("$(riscos64-link "${objs[@]}" "${libargs[@]}" '-o' "$output")")
+        exit "${cmds[*]}"
+        return
+
+    elif ! $compile_only && ! $preprocess ; then
+        debug "Making a target binary"
+
         # They wanted to build a target binary
         if [[ "$one_file" != '*' ]] ; then
+            # Just one file to build (or no files)
             if [[ "$output" = '' ]] ; then
                 output="${one_file},ff8"
                 target="${one_file}"
                 ofile="${one_file}.o"
+            else
+                if [[ ! "${output}" =~ ,ff8$ ]] ; then
+                    output="${output},ff8"
+                fi
+                ofile="${one_file}.o"
+                target="${one_file}"
             fi
         else
+            # Many files
             if [[ "$output" = '' ]] ; then
                 output="${default_aif},ff8"
                 target="${default_aif}"
@@ -156,18 +266,24 @@ function riscos_cc() {
                 args+=(-c -o "${ofile}")
             fi
         fi
+    else
+        debug "Just compiling code"
+
+        if [[ "$output" != '' ]] ; then
+            args+=(-o "${output}")
+        fi
     fi
 
     cmds=("$CC" "${extra_flags[@]}" "${args[@]}")
-    if ! $compile_only && [[ "$one_file" != '' ]] ; then
-        cmds+=("&&" "$(riscos_link "${ofile}" -Map "${target}.map" '-o' "$output")")
+    if ! $compile_only && ! $preprocess && [[ "$one_file" != '' ]] ; then
+        cmds+=("&&" "$(riscos64_link "${ofile}" "${libargs[@]}" '-o' "$output")")
     fi
 
     echo "${cmds[*]}"
 }
 
 
-function riscos_as() {
+function riscos64_as() {
     local inargs=("$@")
     local args=()
     local arg
@@ -444,30 +560,30 @@ function riscos64_link() {
         # Extract the list of relocations within .data.rel
         cmds=("$LD" "${args[@]}" "-r" "-o" "${output_elf}"
               "&&" "$OBJDUMP" "--reloc" "--syms" "--wide" "${output_elf}" ">" "${output_syms}")
-        if ! bash -x -c "${cmds[*]}" ; then
-            echo "Failed to create intermediate relocations" >&2
-            exit 1
-        fi
+        #if ! bash -x -c "${cmds[*]}" ; then
+        #    echo "Failed to create intermediate relocations" >&2
+        #    exit 1
+        #fi
         # The relocations (and symbols they refer to) are now in ${output_syms}
 
         # We must generate a table of those relocations to include with our relocation code.
-        cmds=("./$RORELOC" "${output_syms}" "-o" "$tmp_reloc")
-        if ! bash -x -c "${cmds[*]}" ; then
-            echo "Failed to create relocation table" >&2
-            exit 1
-        fi
+        cmds+=("&&" "$RORELOC" "${output_syms}" "-o" "$tmp_reloc")
+        #if ! bash -x -c "${cmds[*]}" ; then
+        #    echo "Failed to create relocation table" >&2
+        #    exit 1
+        #fi
 
         # Add the relocation code and the table to the inputs
         args+=("$tmp_reloc")
 
         # Final linkage with all the symbols and areas resolved
         if $use_ldmap ; then
-            cmds=("$LD" "${args[@]}" "-Map" "${output_syms}" "-o" "${output_elf}")
+            cmds+=("&&" "$LD" "${args[@]}" "-Map" "${output_syms}" "-o" "${output_elf}")
         else
-            cmds=("$LD" "${args[@]}" "-o" "${output_elf}" \
-                  "&&" "$OBJDUMP" "--syms" "--wide" "${output_elf}" ">" "${output_syms}")
+            cmds+=("&&" "$LD" "${args[@]}" "-o" "${output_elf}" \
+                   "&&" "$OBJDUMP" "--syms" "--wide" "${output_elf}" ">" "${output_syms}")
         fi
-        cmds+=("&&" "$OBJCOPY" "-O" "binary" "-j" ".text" "-j" ".rodata" "-j" ".data" "-j" ".data.rel" "${output_elf}" "${output}" \
+        cmds+=("&&" "$OBJCOPY" "-O" "binary" "-j" ".text" "-j" ".rodata" "-j" ".data.rel.ro" "-j" ".data" "-j" ".data.rel" "${output_elf}" "${output}" \
                "&&" "chmod" "a-x" "${output_elf}" "${output}" \
                "&&" "$ROSYMBOLS" "${output_syms}" "${output}")
         if [[ "$type" != '' && ! $output =~ ,([0-9a-f][0-9a-f][0-9a-f])$ ]] ; then
@@ -487,7 +603,6 @@ function install() {
     TOOLS=(riscos64-cc \
            riscos64-link \
            riscos64-as \
-           riscos64-ar \
            riscos64-libfile)
 
     TARGET="${args[0]}"
@@ -508,7 +623,9 @@ function install() {
     fi
 
     if [[ "$TARGET" = '' || "${TARGET:0:2}" = '-h' ]] ; then
-        echo "Syntax: $0 install" 2>&1
+        echo "Syntax: $0 install [<target dir>]" >&2
+        echo "Installation will attempt to write to ~/bin, or /usr/local/bin if no" >&2
+        echo "target directory is supplied" >&2
         exit 1
     fi
 
@@ -528,21 +645,26 @@ function install() {
     # Remove any existing shell tool
     rm -f "${TARGET}/riscos64-shell"
 
-    # Create a marker file for every tool that exists within the container.
+    # Copy all the tools over there
+    rm -f "${TARGET}/riscos64_resources"
+    mkdir -p "${TARGET}/riscos64_resources/"
+    cp -R "${CLIB64}"/* "${TARGET}/riscos64_resources/"
+
+    # Create a marker file for every tool that we want to install
     for tool in "${TOOLS[@]}" ; do
         rm -f "$TARGET/$tool"
         ln -s "$TARGET/riscos64-shell" "$TARGET/$tool"
     done
 
     # We implicitly create the `riscos64-shell` command, which is this script.
-    cat < "$0" > "${TARGET}/riscos64-shell"
+    sed -E -e 's!^CLIB64=.*!CLIB64=${SCRIPTDIR}/riscos64_resources!' < "$0" > "${TARGET}/riscos64-shell"
 
-    # Symlink each of our marker files to the riscos-shell script, which will run
+    # Symlink each of our marker files to the riscos64-shell script, which will run
     # them with the same configuration as this.
     for toolfile in "${TOOLS[@]}" ; do
         echo "  Create tool $toolfile"
         ln -fs "riscos64-shell" "$TARGET/$toolfile"
-        chmod +x "$toolfile"
+        chmod +x "$TARGET/$toolfile"
     done
 }
 
@@ -577,7 +699,58 @@ else
     fi
 fi
 
+function tool_help() {
+    cat <<EOM
+RISC OS 64-bit build helper tool.
+
+This tool is used to allow builds for 64-bit RISC OS with command line tools
+similar to those on RISC OS. The tool uses a docker image to create run the
+cross-compile under GCC.
+
+Syntax: robuild64 [<command> [<args>]]
+Commands:
+
+    install [<directory>]
+        - Install the tools into a specific directory (defaults to ~/bin).
+
+    shell [<commands>]
+    bash [<commands>
+        - Enter a shell in the build environment.
+
+    riscos64-cc <GCC args>|-help
+        - Compile, or link sources, with GCC.
+
+    riscos64-as <GNU assembler args>
+        - Assemble with GNU assembler.
+
+    riscos64-link <ld args>|-help
+        - Link with the GNU linker, applying linker script for AIF, RMF
+          or Utility.
+            -aif    - creates an absolute
+            -rmf    - creates a module
+            -util   - creates a utility
+
+    riscos64-libfile <libfile args>
+        - Create archives, using syntax like RISC OS libfile.
+
+Environment variables:
+
+    RISCOS64_RELDIRS
+        - number of directories above the current directory to map into
+          environment.
+
+    RO64DEBUG
+        - set to 1 to debug the tool's execution.
+EOM
+}
+
+
 case "$cmd" in
+
+    -h|-help|--help|help)
+        tool_help
+        exit
+        ;;
 
     install)
         install "${args[@]}"
@@ -585,11 +758,11 @@ case "$cmd" in
         ;;
 
     riscos64-cc|cc)
-        args=($(riscos_cc "${args[@]}"))
+        args=($(riscos64_cc "${args[@]}"))
         ;;
 
     riscos64-as|as)
-        args=($(riscos_as "${args[@]}"))
+        args=($(riscos64_as "${args[@]}"))
         ;;
 
     riscos64-link|link)
@@ -602,7 +775,7 @@ case "$cmd" in
 
     bash)
         if [[ "${#args}" != 0 ]] ; then
-            args=(-c "${args[@]}")
+            args=(-c "\"${args[@]}\"")
         fi
         if [[ -t 0 ]] ; then
             # If this is a TTY, start as a login shell, interactively
@@ -626,7 +799,7 @@ else
         docker run --rm dockcross/linux-arm64:latest > "$crosstool"
         chmod +x "$crosstool"
     fi
-    #echo "Running crosstool for $cmd..."
+    debug "Running crosstool for $cmd..."
     ct_args=(-v "${CLIB64}:/ro64/clib")
     ct_args+=(-v "${CLIB64}/linker:/ro64/linker")
     prefix_cmd=
@@ -640,6 +813,9 @@ else
         done
         prefix_cmd="cd '${reldir:1:${#reldir}}' && "
     fi
+
+    debug "Running: ${args[*]}"
+
     "$crosstool" --args "${ct_args[*]}" \
          -- bash -c "$prefix_cmd${args[*]}"
 fi

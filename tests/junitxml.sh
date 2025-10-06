@@ -247,10 +247,7 @@ function junitxml_output() {
     local line
 
     echo -n > "$output"
-    while IFS= read line ; do
-        echo "$line"
-        echo "$line" | sed -E $'s/\x1b\[([0-9]*;*)*[a-z]//g; s/\x0f|\x1b\\(B//g' >> "$output"
-    done
+    tee >(sed -E $'s/\x1b\[([0-9]*;*)*[a-z]//g; s/\x0f|\x1b\\(B//g' >> "$output")
     junitxml_timestamp > "$(junitxml_logname "endtime")"
 }
 

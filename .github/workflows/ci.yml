@@ -56,6 +56,11 @@ jobs:
           cd clib
           make export
 
+      - name: Smoke test the C library
+        run: |
+          cd clib
+          tests/test-install.sh
+
       - name: Build the absolutes
         run: |
           cd absolutes
