@@ -34,8 +34,8 @@ junitxml_testsuite_name="$(basename "$0")"
 ##
 # Clean up the temporary directory we created.
 function junitxml_cleanup() {
-    if [[ "$(uname -s)" == 'Darwin' ]] ; then
-        # On OSX, '--one-file-system' does not exist.
+    if [[ "$(uname -s)" == 'Darwin' || -h /bin/ls ]] ; then
+        # On OSX and in BusyBox, '--one-file-system' does not exist.
         rm -rf "${junitxml_tempdir}"
     else
         rm -rf --one-file-system "${junitxml_tempdir}"

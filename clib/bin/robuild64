@@ -225,7 +225,7 @@ function riscos64_cc() {
         fi
 
         cmds=("$(riscos64-link "${objs[@]}" "${libargs[@]}" '-o' "$output")")
-        exit "${cmds[*]}"
+        echo "${cmds[*]}"
         return
 
     elif ! $compile_only && ! $preprocess ; then
