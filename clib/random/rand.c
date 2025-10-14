@@ -65,6 +65,7 @@ initialize_rand3(void)
     rand3_state = _fbsd_allocatestate(TYPE_3);
     error = _fbsd_initstate_r(rand3_state, 1, rand3_state->rst_randtbl, BREAK_3);
     assert(error == 0);
+    rand3_state_initialised = true;
 }
 
 int

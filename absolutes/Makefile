@@ -21,6 +21,7 @@ ALL_TARGETS = hello_world \
 				simple_hello_world \
 				test_time \
 				test_readfile \
+				test_random \
 				test_writefile \
 				test_printf_newline \
 				test_printf \
