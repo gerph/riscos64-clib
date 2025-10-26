@@ -376,6 +376,8 @@ OBJS = 	\
 		string/strstr.o \
 		string/strtok.o \
 		string/strcase.o \
+		string/strcoll.o \
+		string/strxfrm.o \
 		\
 		conversion/atoi.o \
 		conversion/atol.o \

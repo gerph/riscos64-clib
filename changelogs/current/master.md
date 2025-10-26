@@ -3,6 +3,7 @@
 
 ### Added
 - maths: `frexp`, `frexpf`, `frexpl` functions.
+- string: `strcoll`, `strxfrm` functions.
 
 ### Changed
 - 
