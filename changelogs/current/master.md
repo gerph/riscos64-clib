@@ -2,7 +2,7 @@
 - 
 
 ### Added
-- 
+- maths: `frexp`, `frexpf`, `frexpl` functions.
 
 ### Changed
 - 

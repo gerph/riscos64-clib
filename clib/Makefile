@@ -241,6 +241,9 @@ MATHS_OBJS = \
 		maths/s_floor.o \
 		maths/s_floorf.o \
 		maths/s_floorl.o \
+		maths/s_frexp.o \
+		maths/s_frexpf.o \
+		maths/s_frexpl.o \
 		maths/s_modf.o \
 		maths/s_modff.o \
 		maths/s_modfl.o \
