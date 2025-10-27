@@ -397,6 +397,8 @@ OBJS = 	\
 		time/time-localtime.o \
 		time/strftime.o \
 		time/asctime.o \
+		time/difftime.o \
+		time/mktime.o \
 		\
 		sysvars/sysvars.o \
 		sysvars/sysvars-kernel.o \
