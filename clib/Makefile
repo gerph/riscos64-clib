@@ -311,6 +311,8 @@ OBJS = 	\
 		io/io-sprintf.o \
 		io/io-vprintf.o \
 		io/sscanf.o \
+		io/fscanf.o \
+		io/vfscanf.o \
 		io/stackcheck.o \
 		io/io-memstream.o \
 		\
@@ -387,6 +389,8 @@ OBJS = 	\
 		conversion/strtoll.o \
 		conversion/strtoul.o \
 		conversion/strtoull.o \
+		conversion/strtoumax.o \
+		conversion/strtoimax.o \
 		\
 		conversion/cvt_decimal.o \
 		conversion/cvt_hex.o \

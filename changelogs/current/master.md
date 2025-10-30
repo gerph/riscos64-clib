@@ -5,6 +5,7 @@
 - maths: `frexp`, `frexpf`, `frexpl` functions.
 - string: `strcoll`, `strxfrm` functions.
 - time: `difftime`, `mktime` functions.
+- stdio: `fscanf`, `vfscanf` functions.
 
 ### Changed
 - 
