@@ -32,7 +32,7 @@ uint64_t _swi(int swi_no, uint32_t flags, ...)
         if (flags & (1<<n))
             regs.r[n] = va_arg(args, uint64_t);
     }
-    _kernel_swi(swi_no | _KERNEL_NOXBIT, &regs, &regs);
+    _kernel_swi(swi_no | _kernel_NONX, &regs, &regs);
 
     for (n=0; n<10; n++)
     {
@@ -43,7 +43,7 @@ uint64_t _swi(int swi_no, uint32_t flags, ...)
         }
     }
 
-    retreg = (flags>>17) & 15;
+    retreg = (flags>>16) & 15;
     retvalue = regs.r[retreg];
 
     /* FIXME: No flags returned */

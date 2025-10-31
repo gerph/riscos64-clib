@@ -25,7 +25,7 @@ typedef struct {
 } _kernel_osgbpb_block;
 
 
-#define _KERNEL_NOXBIT (1lu<<31)    /* Always clear the X bit (otherwise always set) */
+#define _kernel_NONX (1lu<<31)    /* Always clear the X bit (otherwise always set) */
 /*************************************************** Gerph *********
  Function:      _kernel_swi
  Description:   Call an arbitrary RISC OS SWI number.
