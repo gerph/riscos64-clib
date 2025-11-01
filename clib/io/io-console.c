@@ -23,5 +23,7 @@ int putchar(int c)
 
 int puts(const char *ptr)
 {
-    return fputs(ptr, stdout);
+    int len = fputs(ptr, stdout);
+    fputc('\n', stdout);
+    return len + 1;
 }

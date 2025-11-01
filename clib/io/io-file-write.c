@@ -115,7 +115,7 @@ int fputs(const char *str, FILE *fh)
     int wrote;
 
     wrote = fwrite(str, 1, len, fh);
-    fputc('\n', fh);
     wrote += 1;
+    // fputs does NOT write a newline (puts does)
     return wrote;
 }
