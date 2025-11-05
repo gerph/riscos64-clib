@@ -97,6 +97,8 @@ with open(map_file, "rb") as fh:
                     #print("Unrecognised line: '%s'" % (line,))
                     continue
                 (size, symbol) = tail.split(b' ', 1)
+                if symbol.startswith(b'.hidden '):
+                    symbol = symbol[8:]
                 try:
                     address = int(address, 16)
                     size = int(size, 16)
