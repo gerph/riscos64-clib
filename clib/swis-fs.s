@@ -13,6 +13,6 @@ _kernel_osbget:
     MOV     x10, #0xa                  // OS_BGet
     ORR     x10, x10, #0x20000
     SVC     #0
-    CSEL    x0, x0, xzr, VS            // error, and EOF return -1
+    CSINV   x0, x0, xzr, VC            // error, and EOF return -1
     LDP     x29, x30, [sp], #16
     RET
