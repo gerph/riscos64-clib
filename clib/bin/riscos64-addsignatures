@@ -99,6 +99,8 @@ with open(map_file, "rb") as fh:
                 (size, symbol) = tail.split(b' ', 1)
                 if symbol.startswith(b'.hidden '):
                     symbol = symbol[8:]
+                elif symbol.startswith(b'.internal '):
+                    symbol = symbol[10:]
                 try:
                     address = int(address, 16)
                     size = int(size, 16)
