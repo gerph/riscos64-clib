@@ -103,7 +103,7 @@ sig_t signal(int sig, sig_t func)
 
     return prior_signal;
 }
-
+sig_t __sysv_signal(int sig, sig_t func) __attribute__ ((weak, alias ("signal")));
 
 
 /*************************************************** Gerph *********
