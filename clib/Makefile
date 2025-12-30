@@ -255,6 +255,8 @@ MATHS_OBJS = \
 		maths/s_roundf.o \
 		maths/s_sin.o \
 		maths/s_sinf.o \
+		maths/s_sincos.o \
+		maths/s_sincosf.o \
 		maths/s_tan.o \
 		maths/s_tanf.o \
 		maths/s_tanh.o \

@@ -2,7 +2,7 @@
 - 
 
 ### Added
-- 
+- math: `sincos` and `sincosf` are now implemented.
 
 ### Changed
 - 
