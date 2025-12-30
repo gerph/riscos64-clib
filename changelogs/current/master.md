@@ -1,5 +1,6 @@
 ### Security
-- 
+- kernel: `_kernel_call` is now implemented.
+- callx: `_callx`, like `_swix` is now implemented.
 
 ### Added
 - math: `sincos` and `sincosf` are now implemented.

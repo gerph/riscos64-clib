@@ -41,6 +41,7 @@ all: export_headers
 
 export_headers: local_headers \
 				riscos_headers/Lib/CLib/swis.h \
+				riscos_headers/Lib/CLib/callx.h \
 				riscos_headers/Lib/CLib/kernel.h \
 				riscos_headers/Lib/CLib/swi_numbers.h \
 				riscos_headers/Lib/CLib/swis_os.h \
@@ -334,8 +335,6 @@ OBJS = 	\
 		kernel/kernel-system.o \
 		kernel/kernel-unwind-current.o \
 		kernel/kernel-unwind.o \
-		kernel/kernel-swi.o \
-		kernel/kernel-swix.o \
 		kernel/kernel-hostos.o \
 		kernel/kernel-fpavailable.o \
 		kernel/kernel-osbyte.o \
@@ -344,6 +343,11 @@ OBJS = 	\
 		kernel/kernel-osargs.o \
 		kernel/kernel-osword.o \
 		kernel/kernel-osfind.o \
+		kernel/kernel-swi.o \
+		kernel/kernel-call.o \
+		kernel/swi.o \
+		kernel/swix.o \
+		kernel/callx.o \
 		\
 		atexit.o \
 		clib.o \
@@ -421,7 +425,6 @@ OBJS = 	\
 		random/random.o \
 		\
 		swis-extras.o \
-		swis-kernel.o \
 		swis-module.o \
 		swis-heap.o \
 		swis-fs.o \

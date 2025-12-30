@@ -268,4 +268,15 @@ const char *_kernel_procname(uint64_t pc);
  ******************************************************************/
 int _kernel_system(const char *cmd, int chain);
 
+/*************************************************** Gerph *********
+ Function:      _kernel_call
+ Description:   Call a user function with a set of registers and a private word in x12
+ Parameters:    func-> the user function to call
+                funcpw = the private word to pass in R12
+                rin-> the input registers to pass, or NULL for 0 in all registers
+                rout-> the output registers to return values in, or NULL to not return
+ Returns:       pointer to an error block, if NULL if V was not set on return
+ ******************************************************************/
+_kernel_oserror *_kernel_call(void *func, void *funcpw, _kernel_swi_regs *rin, _kernel_swi_regs *rout);
+
 #endif
