@@ -1,5 +1,6 @@
 /* Very very simple sscanf */
 
+#include <stdbool.h>
 #include <stdarg.h>
 #include <string.h>
 #include <stdio.h>
@@ -48,7 +49,7 @@ int vsscanf(const char *str, const char *format, va_list args)
                 {
                     case 's':
                         /* String conversion - read up to end of string, or whitespace */
-                        char *dest = va_arg(args, char *);
+                        char *sdest = va_arg(args, char *);
                         //char *odest = dest;
 
                         /* Skip any leading spaces */
@@ -56,8 +57,8 @@ int vsscanf(const char *str, const char *format, va_list args)
                             str++;
 
                         while (*str && !isspace(*str))
-                            *dest++ = *str++;
-                        *dest = '\0';
+                            *sdest++ = *str++;
+                        *sdest = '\0';
                         //printf("Converted '%s', left '%s', format '%s'\n", odest, str, format);
                         converted++;
                         if (*str == '\0')
@@ -66,12 +67,69 @@ int vsscanf(const char *str, const char *format, va_list args)
                             goto done;
                         }
                         break;
+
+                    case 'd':
+                    case 'i':
+                        /* Integer conversion */
+                        int *idest = va_arg(args, int);
+                        bool negative = false;
+                        int value = 0;
+                        int digits = 0;
+                        if (*str == '-')
+                        {
+                            negative = true;
+                            str++;
+                        }
+                        if (c == 'i' && *str == '0' && (str[1] | 32) == 'x')
+                        {
+                            str += 2;
+                            /* Hex sequence (only valid for 'i') */
+                            while ((*str >= '0' && *str <= '9') ||
+                                   ((*str | 32) >= 'a' && (*str | 32) <= 'f'))
+                            {
+                                c = *str++;
+                                if (c >= '0' && c <= '9')
+                                    value = value * 16 + (c - '0');
+                                else
+                                    value = value * 16 + ((c|32) - 'a');
+                                digits++;
+                            }
+                        }
+                        else if (c == 'i' && *str == '0' && str[1] >= '0' && str[1] <= '7')
+                        {
+                            str += 1;
+                            /* Octal sequence (only valid for 'i') */
+                            while (*str >= '0' && *str <= '7')
+                            {
+                                c = *str++;
+                                if (c >= '0' && c <= '7')
+                                    value = value * 8 + (c - '0');
+                                digits++;
+                            }
+                        }
+                        else
+                        {
+                            /* Base 10 */
+                            //printf("sscanf(base10): '%s'\n", str);
+                            while (*str >= '0' && *str <= '9')
+                            {
+                                value = value * 10 + (*str++ - '0');
+                                digits++;
+                            }
+                        }
+                        if (digits == 0)
+                            goto done; /* Wasn't a number */
+                        if (negative)
+                            value = -value;
+                        *idest = value;
+                        converted++;
+                        break;
                 }
                 break;
 
             default:
                 /* Anything else must match exactly */
-                if (*str != c)
+                if (*str++ != c)
                     goto done;
                 break;
         }
