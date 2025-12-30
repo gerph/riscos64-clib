@@ -161,7 +161,7 @@ static int __fs_read_line(FILE *fh, char *str, size_t size)
         if (c < 0)
             return c;
         *p++ = c;
-        if (c = '\n')
+        if (c == '\n')
             break;
     }
     *p = '\0';
