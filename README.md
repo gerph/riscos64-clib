@@ -69,7 +69,7 @@ The exported libraries and tools are built automatically by the GitHub build sys
 The exported directory can be downloaded from the [Releases](https://github.com/gerph/riscos64-clib/releases)
 and used on POSIX systems (Linux, macOS, WSL2). To install the tooling, use:
 
-    bin/robuild64 <target-dir>
+    bin/robuild64 install <target-dir>
 
 This will install the tools:
 
@@ -98,33 +98,33 @@ Alternatively, the compile and link process can be done separately, for example:
 
 The 64-bit AIF format has been defined as follows:
 
-| Offset | Value     | Instructions | Meaning |
-| ------ | --------- | ------------ | ------- |
-| &000   | &e1a00000 | ARM32: `NOP`             | ARM32 decompression |
-| &004   | &e1a00000 | ARM32: `NOP`             | ARM32 reloc |
-| &008   | &e1a00000 | ARM32: `NOP`             | ARM32 zero init |
-| &00C   | &eb00000b | ARM32: `BL      entry`   | ARM32 image entry |
-| &010   | &ef000011 | ARM32: `SWI     OS_Exit` | explicit OS_Exit |
-| &014   | variable  | code + static data size  | read only size |
-| &018   | variable  | R/W data size| read write size |
-| &01C   | &0        | - | debug size |
-| &020   | variable  | zero init size | zero init size |
-| &024   | &0        | - | debug type |
-| &028   | &8000     | - | linked base address |
-| &02C   | &0        | - | workspace size (obsolete) |
-| &030   | &40       | - | address mode |
-| &034   | &0        | - | data base address |
-| &038   | &0        | - | reserved |
-| &03c   | &0        | - | reserved |
-| &040   | &e28f0000 | ARM32: `entry: ADR     r0, error_block`    | ARM32 error report |
-| &044   | &ef00002b | ARM32: `SWI     OS_GenerateError`          |  |
-| &048   | &0        | ARM32: `error_block: DCD     0` |  |
-| &04c   | string    | ARM32: `= "AArch64 binaries cannot be run on 32-bit RISC OS", 0` |  |
-| &07c   | &0        | ARM32: `DCD     0` |  |
+| Offset | Value       | Instructions | Meaning |
+| ------ | ----------- | ------------ | ------- |
+| &000   | `&e1a00000` | ARM32: `NOP`             | ARM32 decompression |
+| &004   | `&e1a00000` | ARM32: `NOP`             | ARM32 reloc |
+| &008   | `&e1a00000` | ARM32: `NOP`             | ARM32 zero init |
+| &00C   | `&eb00000b` | ARM32: `BL      entry`   | ARM32 image entry |
+| &010   | `&ef000011` | ARM32: `SWI     OS_Exit` | explicit OS_Exit |
+| &014   | variable    | code + static data size  | read only size |
+| &018   | variable    | R/W data size| read write size |
+| &01C   | `&0`        | - | debug size |
+| &020   | variable    | zero init size | zero init size |
+| &024   | `&0`        | - | debug type |
+| &028   | `&8000`     | - | linked base address |
+| &02C   | `&0`        | - | workspace size (obsolete) |
+| &030   | `&40`       | - | address mode |
+| &034   | `&0`        | - | data base address |
+| &038   | `&0`        | - | reserved |
+| &03c   | `&0`        | - | reserved |
+| &040   | `&e28f0000` | ARM32: `entry: ADR     r0, error_block`    | ARM32 error report |
+| &044   | `&ef00002b` | ARM32: `SWI     OS_GenerateError`          |  |
+| &048   | `&0`        | ARM32: `error_block: DCD     0` |  |
+| &04c   | string      | ARM32: `= "AArch64 binaries cannot be run on 32-bit RISC OS", 0` |  |
+| &07c   | `&0`        | ARM32: `DCD     0` |  |
 | ... |
-| &100   | &D503201F | ARM64: `NOP` | AArch64 decompression |
-| &104   | &94000004 | ARM64: `BL zeroinit` | AArch64 zero init |
-| &108   | &9400001F | ARM64: `BL entry` | AArch64 entry point |
+| &100   | `&D503201F` | ARM64: `NOP` | AArch64 decompression |
+| &104   | `&94000004` | ARM64: `BL zeroinit` | AArch64 zero init |
+| &108   | `&9400001F` | ARM64: `BL entry` | AArch64 entry point |
 
 This follows the pattern defined in https://riscos.com/support/developers/riscos6/programmer/codeformats.html for Absolute files, with 64 (&40) in place of the bitness.
 
@@ -170,20 +170,20 @@ Utilities, like AIF files, have an ARM 32-bit header. This follows the standard 
 
 The format has been extended, thus:
 
-| Offset | Value     | Instructions             | Meaning |
-| ------ | --------- | ------------------------ | ------- |
-| &000   | &ea000005 | ARM32: `B       &1C`     | ARM32 entry |
-| &004   | &79766748 | -                        | magic 1 |
-| &008   | &216c6776 | -                        | magic 2 |
-| &00c   | variable  | code + static size       | Read-only size |
-| &010   | variable  | R/W data size            | Read-write size |
-| &014   | &00000040 | -                        | Bitness + flags |
-| &018   | variable  | -                        | offset of ARM64 entry |
-| &01c   | &e28f0004 | ARM32: `ADR     r0, &24` | ARM32 error report |
-| &020   | &e3500102 | ARM32: `CMP     r0, #&80000000` | |
-| &024   | &e1a0f00e | ARM32: `MOV     pc, lr`  | |
-| &028   | &00000000 | ARM32: error number      | |
-| &02c   | &63724141 | ARM32: `= "AArch64 binaries cannot be run on 32-bit RISC OS" ,0` | |
+| Offset | Value       | Instructions             | Meaning |
+| ------ | ----------- | ------------------------ | ------- |
+| &000   | `&ea000005` | ARM32: `B       &1C`     | ARM32 entry |
+| &004   | `&79766748` | -                        | magic 1 |
+| &008   | `&216c6776` | -                        | magic 2 |
+| &00c   | variable    | code + static size       | Read-only size |
+| &010   | variable    | R/W data size            | Read-write size |
+| &014   | `&00000040` | -                        | Bitness + flags |
+| &018   | variable    | -                        | offset of ARM64 entry |
+| &01c   | `&e28f0004` | ARM32: `ADR     r0, &24` | ARM32 error report |
+| &020   | `&e3500102` | ARM32: `CMP     r0, #&80000000` | |
+| &024   | `&e1a0f00e` | ARM32: `MOV     pc, lr`  | |
+| &028   | `&00000000` | ARM32: error number      | |
+| &02c   | `&63724141` | ARM32: `= "AArch64 binaries cannot be run on 32-bit RISC OS" ,0` | |
 
 The utility file will be entered at the offset given at offset &18.
 
