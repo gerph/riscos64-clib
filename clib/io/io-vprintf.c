@@ -329,7 +329,7 @@ int _vprintf(outputter_t *out, const char *format, va_list args)
                             value = va_arg(args, uint64_t) & 0xFF;
                         else if (params.param_width == 'h')
                             value = va_arg(args, uint64_t) & 0xFFFF;
-                        else if (params.param_width == 'l')
+                        else if (params.param_width == 'l' || !params.param_width)
                             value = va_arg(args, uint64_t) & 0xFFFFFFFF;
                         else
                             value = va_arg(args, uint64_t);

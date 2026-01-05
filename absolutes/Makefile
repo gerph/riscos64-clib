@@ -29,7 +29,8 @@ ALL_TARGETS = hello_world \
 				test_sscanf \
 				test_reloc \
 				test_constructor \
-				test_system
+				test_system \
+				test_swix
 
 
 targetted:
