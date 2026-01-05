@@ -1,3 +1,6 @@
+#ifndef _SWIS_H
+#define _SWIS_H
+
 #include <stdint.h>
 #include "kernel.h"
 
@@ -14,3 +17,5 @@
 
 _kernel_oserror *_swix (int swi_no, uint32_t flags, ...);
 uint64_t _swi(int swi_no, uint32_t flags, ...);
+
+#endif
