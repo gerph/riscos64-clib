@@ -6,6 +6,13 @@
 
 ### Changed
 - stdio: `printf` now handles `%u` as a 32-bit value.
+- stdio: `sscanf` now handles `%x`, `%X`, `%o`, and `%u` numeric formats.
+- stdio: `sscanf` now handles leading space skipping on numeric formats.
+- stdio: `sscanf` now handles `%c` character formats.
+- stdio: `sscanf` now handles field widths on `%c`, and `%s` formats.
+- stdio: `sscanf` now handles `%n` offset format.
+- stdio: `sscanf` now handles parameter widths `h`, `hh`, `l`, `ll`, `z`, `j`, and `t`.
+- stdio: `sscanf` now handles skipped conversions.
 - swis: Guards added to the `swis.h` header.
 
 ### Fixed

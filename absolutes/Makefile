@@ -27,6 +27,7 @@ ALL_TARGETS = hello_world \
 				test_printf \
 				test_printf2 \
 				test_sscanf \
+				test_sscanf2 \
 				test_reloc \
 				test_constructor \
 				test_system \
