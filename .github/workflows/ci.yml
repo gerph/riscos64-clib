@@ -12,6 +12,7 @@ name: RISC OS
 # Controls when the action will run. Triggers the workflow on:
 #   * push on any branch.
 #   * tag creation for tags beginning with a 'v'
+#   * pull requests
 on:
   push:
     branches: ["master"]
@@ -28,11 +29,8 @@ on:
       - 'robuild64'
       - 'VersionNum'
       - 'tests/**'
-
-concurrency:
-  # Be nice to the build service and only submit a single job at a time.
-  group: riscos-build-service
-  cancel-in-progress: false
+      # Or the automation files
+      - '.github/workflows/**'
 
 jobs:
   build:
@@ -111,6 +109,9 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    concurrency:
+      group: riscos-build-server
     needs: build
     permissions:
       contents: read
