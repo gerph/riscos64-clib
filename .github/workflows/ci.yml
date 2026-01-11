@@ -97,12 +97,12 @@ jobs:
           echo "leafname_lib=$leafname_lib" >> $GITHUB_OUTPUT
           echo "leafname_bin=$leafname_bin" >> $GITHUB_OUTPUT
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: RISCOS64-binaries
           path: ${{ steps.version.outputs.leafname_bin }}
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: RISCOS64-clib
           path: ${{ steps.version.outputs.leafname_lib }}
