@@ -17,8 +17,9 @@ on:
   push:
     branches: ["master"]
     tags: ["v*"]
-  # Pull request events happen on pull request state transitions, so we probably don't want this here.
+
   pull_request:
+    types: [opened, reopened, synchronize]
     branches: ["*"]
     paths:
       # Only run the job if the changes affect the C library
