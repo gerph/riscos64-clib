@@ -8,4 +8,14 @@ typedef struct outputter_s {
     void *private;
 } outputter_t;
 
+typedef struct formatparams_s {
+    int alternate;
+    int sign;
+    int digit_pad;
+    int align_left;
+    int field_width;
+    int precision;
+    int param_width;
+} formatparams_t;
+
 int _vprintf(outputter_t *out, const char *format, va_list args);

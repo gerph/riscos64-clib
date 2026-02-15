@@ -8,16 +8,10 @@
 /* Define this if printing a '0' just gives zero, with no prefix 0x or 0, etc */
 #define ZERO_IS_JUST_ZERO
 
+#ifdef PRINTF_HAS_FP
+int __printf_fpfmt(outputter_t *out, formatparams_t *params, char fmt, double x);
+#endif
 
-typedef struct formatparams_s {
-    int alternate;
-    int sign;
-    int digit_pad;
-    int align_left;
-    int field_width;
-    int precision;
-    int param_width;
-} formatparams_t;
 
 static int count_pad_digits(formatparams_t *params, int size, char *prefix)
 {
@@ -460,6 +454,54 @@ int _vprintf(outputter_t *out, const char *format, va_list args)
                     }
                 }
                 break;
+
+#ifdef PRINTF_HAS_FP
+            case 'f':
+            case 'e':
+            case 'E':
+            case 'g':
+            case 'G':
+                double value;
+                value = va_arg(args, double);
+                n += __printf_fpfmt(out, &params, c, value);
+                break;
+#else
+            case 'f':
+            case 'e':
+            case 'E':
+            case 'g':
+            case 'G':
+                /* Rudimentary FP which doesn't actually do any floating point.
+                 * None of the parameters are honoured though.
+                 */
+                double value;
+                value = va_arg(args, double);
+                if (value > (double)(1llu<<60))
+                {
+                    n += out->writen(out, "HIGHFP", 5);
+                }
+                else if (value < (double)-(1llu<<60))
+                {
+                    n += out->writen(out, "LOWFP", 5);
+                }
+                else
+                {
+                    int ivalue = (int)value;
+                    if (ivalue != value)
+                    {
+                        n += out->writec(out, '~');
+                    }
+                    else
+                    {
+                        int size;
+                        char buf[32];
+                        size = __cvt_uint64_decimal(ivalue, buf);
+                        n += out->writen(out, buf, size);
+                    }
+                }
+                break;
+#endif
+
 
             default:
                 n += out->writec(out, '%');

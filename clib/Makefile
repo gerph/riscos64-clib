@@ -17,6 +17,8 @@ ALL_TARGETS = libcrt.a
 
 DEFAULT_GOAL = libcrt.a
 
+# Set this to 0 to remove the FP support from printf
+PRINTF_HAS_FP = 1
 
 targetted: export_headers VersionNum
 	make ${DEFAULT_GOAL}
@@ -96,6 +98,7 @@ clean:
 			sysvars/*.o \
 			ctypes/*.o \
 			maths/*.o \
+			gdtoa/*.o \
 			random/*.o \
 			VersionNum
 
@@ -148,6 +151,10 @@ CFLAGS += -O1
 # Options for this build
 CFLAGS += -DARCH_HAS_DIVISION
 CFLAGS += -DCONSTRUCTORS
+
+ifeq (${PRINTF_HAS_FP},1)
+CFLAGS += -DPRINTF_HAS_FP
+endif
 
 # Assembler flags
 AFLAGS = -march=armv8-a
@@ -271,6 +278,45 @@ MATHS_OBJS = \
 
 CFLAGS += -Imaths/include/
 
+GDTOA_OBJS = \
+		gdtoa/dmisc.o \
+		gdtoa/misc.o \
+		gdtoa/fmt_f.o \
+		gdtoa/dtoa.o
+CFLAGS += -Igdtoa/
+
+
+IO_OBJS = \
+		io/io-constants.o \
+		io/io-console.o \
+		io/io-consoleio.o \
+		io/io-init.o \
+		io/io-file-misc.o \
+		io/io-file-fopen.o \
+		io/io-file-fopen-lesser.o \
+		io/io-file-read.o \
+		io/io-file-write.o \
+		io/io-file-seek.o \
+		io/io-file-seek-lesser.o \
+		io/io-fgets.o \
+		io/io-fprintf.o \
+		io/io-printf.o \
+		io/io-sprintf.o \
+		io/sscanf.o \
+		io/fscanf.o \
+		io/vfscanf.o \
+		io/stackcheck.o \
+		io/io-memstream.o \
+
+ifeq (${PRINTF_HAS_FP},1)
+IO_OBJS += io/io-vprintf_fp.o
+io/io-vprintf_fp.o: io/io-vprintf.c
+	${CC} ${CFLAGS} -c -o $@ $?
+else
+IO_OBJS += io/io-vprintf_nofp.o
+io/io-vprintf_nofp.o: io/io-vprintf.c
+	${CC} ${CFLAGS} -c -o $@ $?
+endif
 
 CC = aarch64-unknown-linux-gnu-gcc
 AS = aarch64-unknown-linux-gnu-as
@@ -297,27 +343,7 @@ OBJS = 	\
 		heap/o1heap-shim.o \
 		heap/init.o \
 		\
-		io/io-constants.o \
-		io/io-console.o \
-		io/io-consoleio.o \
-		io/io-init.o \
-		io/io-file-misc.o \
-		io/io-file-fopen.o \
-		io/io-file-fopen-lesser.o \
-		io/io-file-read.o \
-		io/io-file-write.o \
-		io/io-file-seek.o \
-		io/io-file-seek-lesser.o \
-		io/io-fgets.o \
-		io/io-fprintf.o \
-		io/io-printf.o \
-		io/io-sprintf.o \
-		io/io-vprintf.o \
-		io/sscanf.o \
-		io/fscanf.o \
-		io/vfscanf.o \
-		io/stackcheck.o \
-		io/io-memstream.o \
+		${IO_OBJS} \
 		\
 		fs/fs-errors.o \
 		fs/fs-remove.o \
@@ -433,6 +459,10 @@ OBJS = 	\
 		start-exit.o \
 		\
 		${BUILTIN_OBJS}
+
+ifeq (${PRINTF_HAS_FP},1)
+OBJS += ${GDTOA_OBJS}
+endif
 
 #		trunc.o \
 #		fabs.o \
