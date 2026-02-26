@@ -34,7 +34,7 @@ jobs:
           mkdir wiki-update
           make full-changelog > wiki-update/Changes.md
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: Changeog
           path: wiki-update/Changes.md
