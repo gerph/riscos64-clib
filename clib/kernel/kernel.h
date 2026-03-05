@@ -3,21 +3,23 @@
 
 #include <stdint.h>
 
+typedef int32_t _kernel_reg; /* A register for interfaces */
+
 typedef struct _kernel_oserror_s {
     uint32_t errnum;
     char errmess[252];
 } _kernel_oserror;
 
-typedef struct _kernel_swi_regs {
-    int32_t r[10];
+typedef struct _kernel_swi_regs_s {
+    _kernel_reg r[10];
 } _kernel_swi_regs;
 
-typedef struct {
+typedef struct _kernel_osfile_block_s {
    int32_t load, exec;       /* load, exec addresses */
    int32_t start, end;       /* start address/length, end address/attributes */
 } _kernel_osfile_block;
 
-typedef struct {
+typedef struct _kernel_osgbpb_block_s {
    void * dataptr;       /* memory address of data */
    int32_t nbytes, fileptr;
    int32_t buf_len;
@@ -232,7 +234,7 @@ int _kernel_oscli(const char *cli);
  ******************************************************************/
 void _kernel_backtrace(void);
 
-typedef struct {
+typedef struct _kernel_unwindblock_s {
    uint64_t fp; /* current FP */
    uint64_t sp; /* current SP */
    uint64_t lr; /* Where we were */
