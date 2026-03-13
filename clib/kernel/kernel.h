@@ -3,7 +3,8 @@
 
 #include <stdint.h>
 
-typedef int32_t _kernel_reg; /* A register for interfaces */
+typedef int32_t _kernel_swi_reg; /* A register for SWI interfaces */
+typedef int64_t _kernel_reg;     /* A register for processor interfaces */
 
 typedef struct _kernel_oserror_s {
     uint32_t errnum;
@@ -11,7 +12,7 @@ typedef struct _kernel_oserror_s {
 } _kernel_oserror;
 
 typedef struct _kernel_swi_regs_s {
-    _kernel_reg r[10];
+    _kernel_swi_reg r[10];
 } _kernel_swi_regs;
 
 typedef struct _kernel_osfile_block_s {
@@ -235,10 +236,10 @@ int _kernel_oscli(const char *cli);
 void _kernel_backtrace(void);
 
 typedef struct _kernel_unwindblock_s {
-   uint64_t fp; /* current FP */
-   uint64_t sp; /* current SP */
-   uint64_t lr; /* Where we were */
-   uint64_t pc; /* Where we are */
+   _kernel_reg fp; /* current FP */
+   _kernel_reg sp; /* current SP */
+   _kernel_reg lr; /* Where we were */
+   _kernel_reg pc; /* Where we are */
 } _kernel_unwindblock;
 
 /*************************************************** Gerph *********
