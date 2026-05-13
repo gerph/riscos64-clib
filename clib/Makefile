@@ -13,9 +13,9 @@
 
 CROSS_ROOT = ${shell echo $$CROSS_ROOT}
 
-ALL_TARGETS = libcrt.a
+ALL_TARGETS = libcrt.a libsupc++.a
 
-DEFAULT_GOAL = libcrt.a
+DEFAULT_GOAL = libcrt.a libsupc++.a
 
 # Set this to 0 to remove the FP support from printf
 PRINTF_HAS_FP = 1
@@ -29,6 +29,7 @@ export: targetted
 	rm -rf export
 	mkdir export
 	cp -R libcrt.a export/
+	cp -R libsupc++.a export/
 	cp -R riscos_headers/* export/
 	mv export/Lib/CLib/* export/
 	rmdir export/Lib/CLib
@@ -37,9 +38,6 @@ export: targetted
 	cp -R asm export/Asm
 	cp -R linker export/linker
 
-# NOTE: Not used yet
-all: export_headers
-	for i in ${ALL_TARGETS} ; do make $$i,ff8 TARGET=$$i || exit $$? ; done
 
 export_headers: local_headers \
 				riscos_headers/Lib/CLib/swis.h \
@@ -100,6 +98,7 @@ clean:
 			maths/*.o \
 			gdtoa/*.o \
 			random/*.o \
+			supc++/*.o \
 			VersionNum
 
 ifeq (${CROSS_ROOT},)
@@ -158,6 +157,9 @@ endif
 
 # Assembler flags
 AFLAGS = -march=armv8-a
+
+# C++ flags
+C++FLAGS = ${CFLAGS} -Isupc++ -fno-exceptions
 
 # Compiler builtins
 BUILTIN_OBJS = \
@@ -320,6 +322,7 @@ io/io-vprintf_nofp.o: io/io-vprintf.c
 endif
 
 CC = aarch64-unknown-linux-gnu-gcc
+C++ = aarch64-unknown-linux-gnu-g++
 AS = aarch64-unknown-linux-gnu-as
 LD = aarch64-unknown-linux-gnu-ld
 AR = aarch64-unknown-linux-gnu-ar
@@ -472,8 +475,60 @@ endif
 libcrt.a: ${OBJS}
 	${AR} -rc $@ ${OBJS}
 
+
+SUPCPPOBJS = \
+		supc++/array_type_info.o \
+		supc++/class_type_info.o \
+		supc++/del_op.o \
+		supc++/del_opa.o \
+		supc++/del_opant.o \
+		supc++/del_opnt.o \
+		supc++/del_ops.o \
+		supc++/del_opsa.o \
+		supc++/del_opv.o \
+		supc++/del_opva.o \
+		supc++/del_opvant.o \
+		supc++/del_opvnt.o \
+		supc++/del_opvs.o \
+		supc++/del_opvsa.o \
+		supc++/dyncast.o \
+		supc++/eh_aux_runtime.o \
+		supc++/enum_type_info.o \
+		supc++/function_type_info.o \
+		supc++/fundamental_type_info.o \
+		supc++/guard.o \
+		supc++/guard_error.o \
+		supc++/new_handler.o \
+		supc++/new_op.o \
+		supc++/new_opa.o \
+		supc++/new_opant.o \
+		supc++/new_opnt.o \
+		supc++/new_opv.o \
+		supc++/new_opva.o \
+		supc++/new_opvant.o \
+		supc++/new_opvnt.o \
+		supc++/pbase_type_info.o \
+		supc++/pmem_type_info.o \
+		supc++/pointer_type_info.o \
+		supc++/pure.o \
+		supc++/si_class_type_info.o \
+		supc++/tinfo.o \
+		supc++/tinfo2.o \
+		supc++/vec.o \
+		supc++/vmi_class_type_info.o \
+
+
+
+
+libsupc++.a: ${SUPCPPOBJS}
+	${AR} -rc $@ ${SUPCPPOBJS}
+
+
 %.o: %.c
 	${CC} ${CFLAGS} -c -o $@ $?
+
+%.o: %.cc
+	${C++} ${C++FLAGS} -c -o $@ $?
 
 %.o: %.s
 	${AS} ${AFLAGS} -o $@ $?
