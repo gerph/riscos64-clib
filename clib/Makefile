@@ -161,6 +161,7 @@ AFLAGS = -march=armv8-a
 
 # Compiler builtins
 BUILTIN_OBJS = \
+		builtins/no_lse.o \
 		builtins/fp_mode.o \
 		builtins/addtf3.o \
 		builtins/subtf3.o \
