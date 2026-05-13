@@ -558,7 +558,7 @@ function riscos64_link() {
         # into the final linkage.
 
         # Extract the list of relocations within .data.rel
-        cmds=("$LD" "${args[@]}" "-r" "-o" "${output_elf}"
+        cmds=("$LD" "${args[@]}" "-r" "--force-group-allocation" "-o" "${output_elf}"
               "&&" "$OBJDUMP" "--reloc" "--syms" "--wide" "${output_elf}" ">" "${output_syms}")
         #if ! bash -x -c "${cmds[*]}" ; then
         #    echo "Failed to create intermediate relocations" >&2
