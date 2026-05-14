@@ -107,6 +107,10 @@ my @tabs = (8, 16, 40);
 my $as = $ENV{'AS'} // 'aarch64-unknown-linux-gnu-as';
 my %symbols;
 
+my %warnedsymbols;
+my $warnedcpp = 0;
+my $warnedfortran = 0;
+
 sub add_output
 {
     my $type = shift @_;
@@ -244,8 +248,22 @@ sub extract_value
         my $sym = $symbols{$valuesym};
         if (!defined $sym)
         {
-            print STDERR "Cannot locate symbol '$sym' in relocation '$_'\n";
-            exit(1);
+            if (!defined $warnedsymbols{$valuesym})
+            {
+                print STDERR "Cannot locate symbol '$valuesym' in relocation '$_'\n";
+                if ($valuesym =~ /^_Z/ && ! defined $symbols{'_ZdlPv'} && !$warnedcpp)
+                {
+                    print STDERR "  Did you remember to include the C++ library (-lsupc++ or \${C++LIB}) ?\n";
+                    $warnedcpp = 1;
+                }
+                elsif ($valuesym =~ /^_gfortrani/ & !$warnedfortran)
+                {
+                    print STDERR "  Did you remember to include the Fortran library (-lfortran or \${FLIB}) ?\n";
+                    $warnedfortran = 1;
+                }
+                $warnedsymbols{$valuesym} = 1;
+            }
+            return (undef, undef, undef);
         }
         $section = $sym->{'section'};
     }
@@ -355,7 +373,10 @@ while (<$ifh>)
             # One of the relocation sections we can handle
             print "Processing relocations for $inreloc_section\n" if ($debug);
             ($_, $section_symbol, $_) = extract_value($inreloc_section);
-            $section_reloctabletype = relocation_type($inreloc_section);
+            if (defined $section_symbol)
+            {
+                $section_reloctabletype = relocation_type($inreloc_section);
+            }
         }
         else
         {
@@ -439,6 +460,12 @@ while (<$ifh>)
             my $reloctype = $2;
             my $value = $3;
             my ($valuesection, $valuesym, $valueoffset) = extract_value($value);
+
+            if (!defined $valuesym)
+            {
+                # No such symbol found, so we'll just skip it (we've already output a warning)
+                next;
+            }
 
             if ($reloctype ne 'R_AARCH64_ABS64')
             {
