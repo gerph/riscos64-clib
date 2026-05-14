@@ -12,7 +12,6 @@
 #	- `make full-changelog`
 #
 # Releasing:
-#	- Update the VersionNum file to reflect the new release.
 #	- `make release-update`
 #	- Update the documentation to reflect the new version.
 #		- Check the new changelog in changelogs/releases/x.yy.md.
