@@ -2,14 +2,15 @@
 - 
 
 ### Added
-- 
+- libsupc++: `libsupc++` is now supplied as part of the build.
 
 ### Changed
 - kernel: The `_kernel_*` typedefs now have structure names.
 - kernel: Register widths are now defined for the SWI calls.
+- tools: Unknown symbol relocation is no longer fatal in riscos-mkreloc to leave the linker to report error.
 
 ### Fixed
-- 
+- builtins: LSE is disabled, so code which looks for it won't fail.
 
 ### Removed
 - 
