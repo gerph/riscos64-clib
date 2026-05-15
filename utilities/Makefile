@@ -72,7 +72,7 @@ CFLAGS = -U__linux -U__linux__ -U__unix__ -U__unix -Ulinux -Uunix -U__gnu_linux_
 CFLAGS += -D__riscos -D__riscos64
 
 # Allow us to build without assuming the standard library is present
-CFLAGS += -nostdlib -ffreestanding -march=armv8-a
+CFLAGS += -nostdlib -ffreestanding -march=armv8-a -mno-outline-atomics
 #CFLAGS += -nostdlib -ffreestanding -march=armv8-a+nofp
 
 # Add the exports directory to those things we'll build with

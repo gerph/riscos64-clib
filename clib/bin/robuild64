@@ -137,6 +137,9 @@ function riscos64_cc() {
     # Allow us to build without assuming the standard library is present
     extra_flags+=(-nostdlib -ffreestanding -march=armv8-a)
 
+    # We do not support the LSE, to make these operations more portable.
+    extra_flags+=(-mno-outline-atomics)
+
     # Add the exports directory to those things we'll build with
     extra_flags+=(-I. \
                   -I${RO64EXPORT}/C \
