@@ -9,6 +9,7 @@
 #include "kernel.h"
 #include "clib.h"
 #include "kernel/kernel-state.h"
+#include "constructors.h"
 
 
 _kernel_oserror *_clib_initialisemodule(void *pwp)
@@ -19,6 +20,10 @@ _kernel_oserror *_clib_initialisemodule(void *pwp)
         __RelocCode();
     _kernel_inmodule = true;
     _clib_internalinit();
+
+#ifdef CONSTRUCTORS
+    __constructors_init();
+#endif
     return NULL;
 }
 
