@@ -39,7 +39,7 @@ static char *test_name="sprintf";
 
 
 #define TEST(buf, ret, fmt, ...) do { \
-        char lbuf[64] = { 0 }; \
+        char lbuf[64] = "INVALID"; \
         int lret = sprintf(lbuf, fmt, ## __VA_ARGS__); \
         if ((lret != ret) || (strcmp(lbuf, buf))) { \
             failed++; \
@@ -350,6 +350,10 @@ int test_sprintf(void)
     TEST("00edcb5433          ",   20, "%+ -0*.*x",    20, 10,  -0x1234abcdu)
     TEST("1234ABCD            ",   20, "% -+0*.*X",    20,  5,  0x1234abcdu)
     TEST("00EDCB5433          ",   20, "% -+0*.*X",    20, 10,  -0x1234abcdu)
+
+    /* Empty format string, single character format string */
+    TEST("",                        0, "")
+    TEST("1",                       1, "1")
 
     if (failed == 0) {
         printf("* PASS sprintf\n");

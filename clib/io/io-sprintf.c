@@ -86,6 +86,11 @@ int vsprintf(char *str, const char *format, va_list args)
     out.left = out.size;
     //printf("sprintf(%x, '%s', ...)\n", out.start, format);
     n = _vprintf((outputter_t*)&out, format, args);
+    if (n==0)
+    {
+        if (out.size > 0)
+            *out.p = '\0';
+    }
     return n;
 }
 
