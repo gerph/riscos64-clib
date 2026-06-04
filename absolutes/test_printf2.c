@@ -355,6 +355,13 @@ int test_sprintf(void)
     TEST("",                        0, "")
     TEST("1",                       1, "1")
 
+    /* Pointer formatting */
+    TEST("NULL",                     4, "%p", 0)
+    TEST("0x8000",                   6, "%p", 0x8000)
+    TEST("0x80000000",               10, "%p", 0x80000000)
+    TEST("0xFFFFFFFF",               10, "%p", 0xFFFFFFFF)
+    TEST("0x100000000",              11, "%p", 0x100000000)
+
     if (failed == 0) {
         printf("* PASS sprintf\n");
     } else {
