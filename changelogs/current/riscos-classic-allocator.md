@@ -2,7 +2,7 @@
 - 
 
 ### Added
-- 
+- stdlib: New riscos allocator is available.
 
 ### Changed
 - 

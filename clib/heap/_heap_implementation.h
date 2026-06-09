@@ -8,6 +8,8 @@
 #ifndef __HEAP_IMPLEMENTATION
 #define __HEAP_IMPLEMENTATION
 
+#include <stddef.h>
+
 typedef struct __heap_implementation_s {
 
     /* Initialisation of the heap, given the available size */
@@ -32,6 +34,9 @@ extern __heap_implementation_t __heap_accumulator;
 
 /* Implementation using OS_Heap */
 extern __heap_implementation_t __heap_osheap;
+
+/* Implementation using the classic RISC OS allocator */
+extern __heap_implementation_t __heap_riscos_alloc;
 
 /* O(1) heap implementation: https://github.com/pavel-kirienko/o1heap */
 extern __heap_implementation_t __heap_o1; /* default */
