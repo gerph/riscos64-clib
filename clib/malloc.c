@@ -124,10 +124,10 @@ void *malloc (size_t size)
 
 void *calloc(size_t count, size_t size)
 {
-    int total = count * size;
+    size_t total = count * size;
     void *mem = malloc(total);
     if (mem)
-        memset(mem, 0, size);
+        memset(mem, 0, total);
     return mem;
 }
 
