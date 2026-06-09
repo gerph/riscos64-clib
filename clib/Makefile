@@ -343,6 +343,7 @@ OBJS = 	\
 		\
 		heap/accumulator.o \
 		heap/osheap.o \
+		heap/riscos_alloc.o \
 		heap/o1heap.o \
 		heap/o1heap-shim.o \
 		heap/init.o \

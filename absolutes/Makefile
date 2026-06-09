@@ -30,6 +30,8 @@ ALL_TARGETS = hello_world \
 				test_sscanf \
 				test_sscanf2 \
 				test_reloc \
+				test_heap_o1heap \
+				test_heap_riscos_alloc \
 				test_constructor \
 				test_system \
 				test_swix
