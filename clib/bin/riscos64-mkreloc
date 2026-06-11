@@ -397,6 +397,11 @@ while (<$ifh>)
     }
     elsif ($insymbols)
     {
+        if /^([A-Fa-f0-9]{16})\sl/)
+        {
+            # Fast reject for local symbols
+            next;
+        }
         # We're in the symbols table. We need to provide a way to identify them from the line.
         # The lines look like:
         #
@@ -417,7 +422,7 @@ while (<$ifh>)
 
             if ($flags =~ /l/)
             {
-                # Ignore local symbols
+                # Ignore local symbols (should have been caught earlier by the fast reject)
                 next;
             }
             if ($section eq '*UND*')
