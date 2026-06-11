@@ -397,7 +397,7 @@ while (<$ifh>)
     }
     elsif ($insymbols)
     {
-        if /^([A-Fa-f0-9]{16})\sl/)
+        if (/^([A-Fa-f0-9]{16})\sl/)
         {
             # Fast reject for local symbols
             next;
