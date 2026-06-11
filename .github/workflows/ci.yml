@@ -38,7 +38,9 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
+      checks: write
+      pull-requests: write
 
     outputs:
       version: ${{ steps.version.outputs.version }}
@@ -80,6 +82,19 @@ jobs:
           zip -9r RISCOS64-Binaries.zip absolutes/*,ff8 modules/*,ffa utilities/*,ffc
           cd clib/export ; zip -9r ../../RISCOS64-CLib.zip *
 
+      - name: Publish Build Report
+        uses: mikepenz/action-junit-report@v6
+        if: success() || failure() # always run even if the previous step fails
+        with:
+          report_paths: 'logs/test*.xml'
+          check_name: Build Report
+          comment: true
+          group_suite: true
+          verbose_summary: true
+          detailed_summary: true
+          include_passed: true
+          include_time_in_summary: true
+
       - name: Give the output a versioned name
         id: version
         run: |
@@ -115,7 +130,7 @@ jobs:
       group: riscos-build-server
     needs: build
     permissions:
-      contents: read
+      contents: write
       checks: write
       pull-requests: write
 
@@ -154,6 +169,7 @@ jobs:
         if: success() || failure() # always run even if the previous step fails
         with:
           report_paths: 'test-results/Test-*.xml'
+          check_name: Test Report
           comment: true
           group_suite: true
           verbose_summary: true
