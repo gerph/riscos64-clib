@@ -132,9 +132,7 @@ function result() {
     fi
 }
 
-
-
-for file in $(find "$dir" -type f | sort) ; do
+while IFS= read -r -d '' file ; do
     leaf=$(basename "$file")
     rotype=unk
     if [[ "$file" =~ ^.*/([^/]*),(...)$ ]] ; then
@@ -287,7 +285,7 @@ EOM
 
     # DEBUG: Only run a single test
     #break
-done
+done < <(find "$dir" -type f -print0 | sort -z)
 
 # We no longer need the robuild file
 rm -f .robuild.yaml
@@ -299,8 +297,5 @@ echo "Fail : $fail"
 
 finish
 
-if [[ "$fail" != 0 ]] ; then
-    exit 1
-else
-    exit 0
-fi
+# finish will already have exited if there was a failure.
+exit 0

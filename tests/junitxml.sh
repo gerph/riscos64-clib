@@ -134,6 +134,26 @@ function junitxml_readlog() {
 
 
 ##
+# Escape a value for use in an XML attribute.
+function junitxml_escape_attribute() {
+    local value="$1"
+    printf '%s' "$value" | sed \
+        -e 's/&/\&amp;/g' \
+        -e "s/'/\&apos;/g" \
+        -e 's/"/\&quot;/g' \
+        -e 's/</\&lt;/g' \
+        -e 's/>/\&gt;/g'
+}
+
+
+##
+# Escape stdin so that it is safe to embed inside a CDATA section.
+function junitxml_escape_cdata() {
+    sed 's/]]>/]]]]><![CDATA[>/g'
+}
+
+
+##
 # Get a timestamp from something
 function junitxml_timestamp() {
     local value
@@ -291,6 +311,8 @@ function junitxml_report() {
     local testsuite
     local failtype failmessage
     local properties propname propvalue
+    local hostname_attr=
+    local hostname_value
 
     echo "<?xml version='1.0' encoding='UTF-8'?>" > "$output"
     for num in $(seq 0 "$junitxml_testnum") ; do
@@ -311,8 +333,13 @@ function junitxml_report() {
     end="$(junitxml_readlog 'endtime' "$lastnum")"
     duration=$(junitxml_timedelta "$start" "$end")
 
-    echo "<testsuite name='$junitxml_testsuite_name' tests='$total' failures='$failures'" \
-         "hostname='$(hostname -f)' time='$duration' timestamp='$timestamp'>" >> "$output"
+    hostname_value="$(hostname -f 2> /dev/null || hostname 2> /dev/null || true)"
+    if [[ "$hostname_value" != '' ]] ; then
+        hostname_attr=" hostname='$(junitxml_escape_attribute "$hostname_value")'"
+    fi
+
+    echo "<testsuite name='$(junitxml_escape_attribute "$junitxml_testsuite_name")' tests='$total' failures='$failures'" \
+         "${hostname_attr} time='$duration' timestamp='$timestamp'>" >> "$output"
 
     properties=0
     while IFS=$'\t' read propname propvalue ; do
@@ -320,7 +347,7 @@ function junitxml_report() {
         if [[ "${properties}" == 1 ]] ; then
             echo "  <properties>" >> "$output"
         fi
-        echo "    <property name='$propname' value='$propvalue' />" >> "$output"
+        echo "    <property name='$(junitxml_escape_attribute "$propname")' value='$(junitxml_escape_attribute "$propvalue")' />" >> "$output"
     done < <(junitxml_readproperties)
     if [[ "${properties}" != 0 ]] ; then
         echo "  </properties>" >> "$output"
@@ -341,15 +368,15 @@ function junitxml_report() {
 
         # Write 'testcase' element
         echo -n "  <testcase" >> "$output"
-        echo -n " name='$testname' time='$duration'" >> "$output"
+        echo -n " name='$(junitxml_escape_attribute "$testname")' time='$duration'" >> "$output"
         if [[ "$class" != '' ]] ; then
-            echo -n " classname='$class'" >> "$output"
+            echo -n " classname='$(junitxml_escape_attribute "$class")'" >> "$output"
         fi
         if [[ "$testfile" != '' ]] ; then
-            echo -n " file='$testfile'" >> "$output"
+            echo -n " file='$(junitxml_escape_attribute "$testfile")'" >> "$output"
         fi
         if [[ "$testline" != '' ]] ; then
-            echo -n " line='$testline'" >> "$output"
+            echo -n " line='$(junitxml_escape_attribute "$testline")'" >> "$output"
         fi
 
         if [[ "$state" == "pass" ]] ; then
@@ -357,16 +384,16 @@ function junitxml_report() {
         elif [[ "$state" == "skip" ]] ; then
             echo ">" >> "$output"
             failmessage="$(junitxml_readlog "failmessage" "$num")"
-            echo -n "    <skipped message=\"$failmessage\"><![CDATA[" >> "$output"
-            junitxml_readlog "output" "$num" >> "$output"
+            echo -n "    <skipped message=\"$(junitxml_escape_attribute "$failmessage")\"><![CDATA[" >> "$output"
+            junitxml_readlog "output" "$num" | junitxml_escape_cdata >> "$output"
             echo "]]></skipped>" >> "$output"
             echo "  </testcase>" >> "$output"
         else
             echo ">" >> "$output"
             failtype="$(junitxml_readlog "failtype" "$num")"
             failmessage="$(junitxml_readlog "failmessage" "$num")"
-            echo -n "    <failure type=\"$failtype\" message=\"$failmessage\"><![CDATA[" >> "$output"
-            junitxml_readlog "output" "$num" >> "$output"
+            echo -n "    <failure type=\"$(junitxml_escape_attribute "$failtype")\" message=\"$(junitxml_escape_attribute "$failmessage")\"><![CDATA[" >> "$output"
+            junitxml_readlog "output" "$num" | junitxml_escape_cdata >> "$output"
             echo "]]></failure>" >> "$output"
             echo "  </testcase>" >> "$output"
         fi
