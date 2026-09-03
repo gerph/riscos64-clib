@@ -92,7 +92,9 @@ SECTIONS
 
         *(.riscos.reloc)
 
-        /* Align the following .data region (R/W) at a page boundary */
+        /* Align the following data (R/W) region at a page boundary - the
+           first thing after this is .data.rel, not .data, since .data.rel
+           is placed ahead of .data below (see __DataStart's own comment) */
         . = ALIGN(4096);
     } > aif
     __RODataEnd = ABSOLUTE(.);
@@ -101,13 +103,18 @@ SECTIONS
     __RODataSize = SIZEOF(.rodata) + SIZEOF(.data.rel.ro);
     __ROSize = __RODataSize + __CodeSize;
 
-    .data . : {
-        __DataStart = ABSOLUTE(.);
-        /* FIXME: We may wish to align to a page boundary here */
-        *(.data)
-        . = ALIGN(16);
-    } > aif
-
+    /* .data.rel is placed ahead of .data (rather than after, as it used
+       to be) purely so the *(SORT(.data.*)) catch-all in .data's own
+       block below can't accidentally claim a .data.rel/.data.rel.* input
+       section before this block gets to. __DataStart must still mark
+       .data's own true start, not this block's - riscos64-mkreloc
+       (crosscompile/riscos64/bin/riscos64-mkreloc) computes a
+       relocation's runtime address as __DataStart's own runtime value
+       plus the section-relative offset objdump reports for a plain
+       ".data+0xNN" relocation, so __DataStart has to coincide exactly
+       with .data's real base address or every such relocation lands
+       .data.rel-worth of bytes short. See __DataStart's own comment
+       below. */
     __DataRelStart = ABSOLUTE(.);
     .data.rel . : {
         . = ALIGN(16);
@@ -115,12 +122,34 @@ SECTIONS
         *(SORT(.data.rel.*))
 
         . = ALIGN(16);
+    } > aif
+    __DataRelEnd = ABSOLUTE(.);
+    __DataRelSize = SIZEOF(.data.rel);
+
+    .data . : {
+        __DataStart = ABSOLUTE(.);
+        *(.data)
+        /* Catch-all for any other per-symbol .data.<name> section a
+           compiler emits (eg. Rust's per-item-section codegen, which
+           doesn't follow GCC's convention of routing relocation-needing
+           globals through a distinctly-named .data.rel[.local] section).
+           .data.rel/.data.rel.* and .data.rel.ro/.data.rel.ro.* are
+           already claimed by their own dedicated SECTIONS blocks above,
+           so this only sweeps up what's left. Every other category here
+           (.text.*, .rodata.*, .data.rel.ro.*, .data.rel.*, .bss.*)
+           already has an equivalent wildcard; this one didn't, so an
+           unmatched .data.<name> fell through to the trailing /DISCARD/
+           below - fatally, if something else still held a relocation
+           into it ("... referenced in section ...: defined in discarded
+           section ..." from ld, seen linking a no_std + alloc Rust
+           object against a std built with a newer core::io::error that
+           added such a section). */
+        *(SORT(.data.*))
+        . = ALIGN(16);
 
         /* The zero initialised region follows */
     } > aif
     __DataEnd = ABSOLUTE(.);
-    __DataRelEnd = ABSOLUTE(.);
-    __DataRelSize = SIZEOF(.data.rel);
     __DataSize = SIZEOF(.data) + SIZEOF(.data.rel);
 
     __ZIStart = ABSOLUTE(.);
